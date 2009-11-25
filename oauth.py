@@ -10,9 +10,9 @@ import cgi
 #
 
 # Consumer Key
-ckey = ""
+ckey = "7DQXjee115WTfglhYAAVeA"
 # Consumer Secret
-csecret = ""
+csecret = "vwrnw41FBaWaIqB2eRk11rbH2wdtkIS76AVf8eZ4"
 
 # Access Token
 atoken = ""
@@ -28,7 +28,7 @@ def make_signature(params, url, method, csecret, secret = ""):
     pstr = "&".join(plist)
     msg = "%s&%s&%s" % (method, urllib.quote(url, ""), 
                         urllib.quote(pstr, ""))
-   
+
     # Calculate Signature
     h = hmac.new("%s&%s" % (csecret, secret), msg, hashlib.sha1)
     sig = h.digest().encode("base64").strip()
