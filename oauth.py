@@ -126,7 +126,7 @@ post = raw_input()
 
 params = init_params()
 params["oauth_token"] = atoken
-params["status"] = urllib.quote(post)
+params["status"] = urllib.quote(post, "")
 
 sig = make_signature(params, post_url, "POST", csecret, atoken_secret)
 params["oauth_signature"] = sig
@@ -134,7 +134,7 @@ params["oauth_signature"] = sig
 del params["status"]
 
 req = urllib2.Request(post_url)
-req.add_data("status=%s" % urllib.quote(post))
+req.add_data("status=%s" % urllib.quote(post, ""))
 req.add_header("Authorization", oauth_header(params))
 
 try:
@@ -158,6 +158,6 @@ resp = urllib2.urlopen(req)
 import xml_parse
 tl = xml_parse.tw_xmlparse(resp.read())
 for post in tl.statuses:
-    print "@%s\t%s" % (post["user"]["screen_name"], post["text"])
+    print "%10s: %s" % (post["user"]["screen_name"], post["text"])
 
 print "Done!!"
