@@ -4,160 +4,184 @@ import hmac, hashlib
 import cgi
 
 #
-# Twitter OAuth Sample Script
+# OAuth Module for Twitter
 # * techno - Hirotaka Kawata
 # * http://techno-st.net/
 #
 
-# Consumer Key
-ckey = "7DQXjee115WTfglhYAAVeA"
-# Consumer Secret
-csecret = "vwrnw41FBaWaIqB2eRk11rbH2wdtkIS76AVf8eZ4"
+class oauth():
+    def __init__(self, ckey, csecret, atoken = "", asecret = "",
+                 site = "http://twitter.com/"):
+        # Request Token URL
+        self.reqt_url = site + 'oauth/request_token'
+        # Authorize URL
+        self.auth_url = site + 'oauth/authorize'
+        # Access Token URL
+        self.acct_url = site + 'oauth/access_token'
 
-# Access Token
-atoken = ""
-# Access Token Secret
-atoken_secret = ""
+        # Consumer Key, Secret
+        self.ckey = ckey
+        self.csecret = csecret
 
-def make_signature(params, url, method, csecret, secret = ""):
-    # Generate Signature Base String
-    plist = []
-    for i in sorted(params):
-        plist.append("%s=%s" % (i, params[i]))
-
-    pstr = "&".join(plist)
-    msg = "%s&%s&%s" % (method, urllib.quote(url, ""), 
-                        urllib.quote(pstr, ""))
-
-    # Calculate Signature
-    h = hmac.new("%s&%s" % (csecret, secret), msg, hashlib.sha1)
-    sig = h.digest().encode("base64").strip()
+        # Access Key, Secret
+        self.atoken = atoken
+        self.asecret = asecret
     
-    return sig
-
-def init_params():
-    p = {
-        "oauth_consumer_key": ckey,
-        "oauth_signature_method": "HMAC-SHA1",
-        "oauth_timestamp": str(int(time.time())),
-        "oauth_nonce": str(random.getrandbits(64)),
-        "oauth_version": "1.0"
-        }
-
-    return p
-
-def oauth_header(params):
-    plist = []
-    for p in params:
-        plist.append('%s="%s"' % (p, urllib.quote(params[p])))
+    # Get Request Token
+    def request_token(self):
+        self._init_params()
+        del self.params["oauth_token"]
         
-    return "OAuth %s" % (", ".join(plist))
+        auth_header = self.oauth_header(self.reqt_url)
 
-# Request Token URL
-reqt_url = 'http://twitter.com/oauth/request_token'
-# Authorize URL
-auth_url = 'http://twitter.com/oauth/authorize'
-# Access Token URL
-acct_url = 'http://twitter.com/oauth/access_token'
-# status update
-post_url = 'http://twitter.com/statuses/update.xml'
-# show friends timeline
-frtl_url = 'http://twitter.com/statuses/friends_timeline.xml'
-
-if not atoken and not atoken_secret:
-    # Request Parameters
-    params = init_params()
-
-    print "Get request token:",
+        req = urllib2.Request(self.reqt_url)
+        req.add_header("Authorization", auth_header)
+        resp = urllib2.urlopen(req)
+        
+        # Parse Token Parameters
+        token_info = cgi.parse_qs(resp.read())
+        for p in token_info:
+            token_info[p] = token_info[p][0]
+        
+        return token_info
     
-    # Generate Signature
-    sig = make_signature(params, reqt_url, "GET", csecret)
-    params["oauth_signature"] = sig
-
-    # Get Token
-    req = urllib2.Request("%s?%s" % (reqt_url, urllib.urlencode(params)))
-    resp = urllib2.urlopen(req)
-    
-    print "\t[OK]"
-    
-    # Parse Token Parameters
-    ret = cgi.parse_qs(resp.read())
-    token = ret["oauth_token"][0]
-    token_secret = ret["oauth_token_secret"][0]
-
-    # Get PIN
-    print "* Please access to this URL, and allow."
-    print "> %s?%s=%s" % (auth_url, "oauth_token", token)
-    print "\n* After that, will display 7 digit PIN, input here."
-    print "PIN ->",
-    pin = raw_input()
-    pin = int(pin)
-    
-    print "Get access token:",
-    
-    # Generate Access Token Request
-    params = init_params()
-    params["oauth_verifier"] = pin
-    params["oauth_token"] = token
-    
-    sig = make_signature(params, acct_url, "GET", csecret, token_secret)
-    params["oauth_signature"] = sig
+    # Get Authorize URL
+    def authorize_url(self, token_info):
+        return "%s?%s=%s" % (
+            self.auth_url, "oauth_token", token_info["oauth_token"])
     
     # Get Access Token
-    req = urllib2.Request("%s?%s" % (acct_url, urllib.urlencode(params)))
+    def access_token(self, token_info, pin):
+        token = token_info["oauth_token"]
+        secret = token_info["oauth_token_secret"]
+
+        self._init_params(token)
+        self.params["oauth_verifier"] = pin
+
+        auth_header = self.oauth_header(self.acct_url, secret = secret)
+        
+        req = urllib2.Request(self.acct_url)
+        req.add_header("Authorization", auth_header)
+        resp = urllib2.urlopen(req)
+        
+        # Parse Access Token
+        token_info = cgi.parse_qs(resp.read())
+        for p in token_info:
+            token_info[p] = token_info[p][0]
+        
+        if not self.atoken and not self.asecret:
+            self.atoken = token_info["oauth_token"]
+            self.asecret = token_info["oauth_token_secret"]
+        
+        return token_info
+    
+    # Return Authorization Header String
+    def oauth_header(self, url, method = "GET", add_params = {},
+                     secret = ""):
+        sig = self._make_signature(url, method, secret, add_params)
+        self.params["oauth_signature"] = sig
+        
+        plist = []
+        for p in self.params:
+            plist.append('%s="%s"' % (p, urllib.quote(self.params[p])))
+        
+        return "OAuth %s" % (", ".join(plist))
+    
+    # Return urllib2.Request Object for OAuth
+    def oauth_request(self, url, method = "GET", add_params = {}):
+        self._init_params()
+        
+        api_params = urllib.urlencode(add_params)
+
+        if method == "GET":
+            req = urllib2.Request("%s?%s" % (url, api_params))
+        elif method == "POST":
+            req = urllib2.Request(url, api_params)
+        else:
+            raise
+
+        for p in add_params:
+            add_params[p] = urllib.quote(add_params[p], "")
+        
+        req.add_header("Authorization", 
+                       self.oauth_header(url, method, add_params,
+                                         secret = self.asecret))
+        
+        return req
+    
+    def _init_params(self, token = None):
+        if token == None:
+            token = self.atoken
+
+        self.params = {
+            "oauth_consumer_key": ckey,
+            "oauth_signature_method": "HMAC-SHA1",
+            "oauth_timestamp": str(int(time.time())),
+            "oauth_nonce": str(random.getrandbits(64)),
+            "oauth_version": "1.0",
+            "oauth_token" : token
+            }
+    
+    def _make_signature(self, url, method = "GET", 
+                        secret = "", add_params = {}):
+        sigparams = {}
+        sigparams.update(self.params)
+        sigparams.update(add_params)
+        
+        # Generate Signature Base String
+        plist = []
+        for i in sorted(sigparams):
+            plist.append("%s=%s" % (i, sigparams[i]))
+        
+        pstr = "&".join(plist)
+        msg = "%s&%s&%s" % (method, urllib.quote(url, ""), 
+                            urllib.quote(pstr, ""))
+        
+        # Calculate Signature
+        h = hmac.new("%s&%s" % (csecret, secret), msg, hashlib.sha1)
+        sig = h.digest().encode("base64").strip()
+        
+        return sig
+
+if __name__ == "__main__":
+    import sys
+    ckey = sys.argv[1]
+    csecret = sys.argv[2]
+
+    oa = oauth(ckey, csecret)
+    req_token = oa.request_token()
+    auth_url = oa.authorize_url(req_token)
+
+    print "Authorize URL:"
+    print auth_url
+    print "PIN:",
+    pin = raw_input()
+
+    acc_token = oa.access_token(req_token, pin)
+
+    print "Screen Name: %s" % acc_token["screen_name"]
+    print "Access Token: %s" % acc_token["oauth_token"]
+    print "Access Token Secret: %s" % acc_token["oauth_token_secret"]
+    
+    # status update
+    post_url = 'http://twitter.com/statuses/update.xml'
+    # show friends timeline
+    frtl_url = 'http://twitter.com/statuses/friends_timeline.xml'
+
+    # Update Status by OAuth Authorization
+    print "What are you doing?:",
+    post = raw_input()
+    
+    req = oa.oauth_request(post_url, "POST",
+                     {"status" : post})
+    
+    try:
+        resp = urllib2.urlopen(req)
+    except urllib2.HTTPError, e:
+        print "Error: %s" % e
+        print e.read()
+    
+    # Get Friends Timeline by OAuth Authorization
+    req = oa.oauth_request(frtl_url)
     resp = urllib2.urlopen(req)
-    
-    print "\t[OK]"
-    
-    # Parse Access Token
-    fin = cgi.parse_qs(resp.read())
-    atoken = fin["oauth_token"][0]
-    atoken_secret = fin["oauth_token_secret"][0]
-    
-    print "Access Token: %s" % atoken
-    print "Access Token Secret: %s" % atoken_secret
-    
-    print "Your screen_name is '%s'." % fin["screen_name"][0]
-    
-
-# Update Status by OAuth Authorization
-print "What are you doing?:",
-post = raw_input()
-
-params = init_params()
-params["oauth_token"] = atoken
-params["status"] = urllib.quote(post, "")
-
-sig = make_signature(params, post_url, "POST", csecret, atoken_secret)
-params["oauth_signature"] = sig
-
-del params["status"]
-
-req = urllib2.Request(post_url)
-req.add_data("status=%s" % urllib.quote(post, ""))
-req.add_header("Authorization", oauth_header(params))
-
-try:
-    resp = urllib2.urlopen(req)
-except urllib2.HTTPError, e:
-    print "Error: %s" % e
-    print e.read()
-
-# Get Friends Timeline by OAuth Authorization
-params = init_params()
-params["oauth_token"] = atoken
-
-sig = make_signature(params, frtl_url, "GET", csecret, atoken_secret)
-params["oauth_signature"] = sig
-
-req = urllib2.Request(frtl_url)
-req.add_header("Authorization", oauth_header(params))
-resp = urllib2.urlopen(req)
-
-# Show Timeline
-import xml_parse
-tl = xml_parse.tw_xmlparse(resp.read())
-for post in tl.statuses:
-    print "%10s: %s" % (post["user"]["screen_name"], post["text"])
-
-print "Done!!"
+    print resp.read(500)
