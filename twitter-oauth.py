@@ -56,11 +56,10 @@ class twoauth():
         return self._post("statuses", "update", params)
 
 if __name__ == "__main__":
-    api = twoauth("vf5Y4VMP0ktRLaoXKPMFDQ",
-            "IvX8diWHfVGYpjeYIhTkybR9IEhxoYJv7T12cUk",
-            "",
-            "")
-    
+    import sys
+
+    api = twoauth(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+
     print api.user["screen_name"]
 
     print "What are you doing?:",
