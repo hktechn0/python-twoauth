@@ -114,7 +114,7 @@ class oauth():
             token = self.atoken
 
         self.params = {
-            "oauth_consumer_key": ckey,
+            "oauth_consumer_key": self.ckey,
             "oauth_signature_method": "HMAC-SHA1",
             "oauth_timestamp": str(int(time.time())),
             "oauth_nonce": str(random.getrandbits(64)),
@@ -138,7 +138,7 @@ class oauth():
                             urllib.quote(pstr, ""))
         
         # Calculate Signature
-        h = hmac.new("%s&%s" % (csecret, secret), msg, hashlib.sha1)
+        h = hmac.new("%s&%s" % (self.csecret, secret), msg, hashlib.sha1)
         sig = h.digest().encode("base64").strip()
         
         return sig
