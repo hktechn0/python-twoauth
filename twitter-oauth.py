@@ -32,23 +32,42 @@ class twoauth():
         
         self.user = user[0]
 
-    def _get(self, a, b):
+    def _get(self, a, b, params = {}):
+        params = self._rm_noparams(params)
         return twxml.xmlparse(
             urllib2.urlopen(
                 self.oauth.oauth_request(
-                    self.url[a][b])).read())
+                    self.url[a][b], "GET", params)).read())
 
     def _post(self, a, b, params):
+        params = self._rm_noparams(params)
         return twxml.xmlparse(
             urllib2.urlopen(
                 self.oauth.oauth_request(
                     self.url[a][b], "POST", params)).read())
-    
-    def friends_timeline(self):
-        return self._get("statuses", "friends_timeline")
 
-    def home_timeline(self):
-        return self._get("statuses", "home_timeline")
+    def _rm_noparams(self, params):
+        flg = True
+        while flg:
+            flg = False
+            for p in params:
+                if not params[p]:
+                    del params[p]
+                    flg = True
+                    break
+        return params
+    
+    def friends_timeline(self, since_id = "", max_id = "",
+                         count = "", page = ""):
+        return self._get("statuses", "friends_timeline", {
+                "since_id" : since_id, "max_id" : max_id,
+                "count" : count, "page" : page })
+
+    def home_timeline(self, since_id = "", max_id = "",
+                      count = "", page = ""):
+        return self._get("statuses", "home_timeline", {
+                "since_id" : since_id, "max_id" : max_id,
+                "count" : count, "page" : page })
 
     def status_update(self, status, reply_to = ""):
         params = { "status" : status,
@@ -64,8 +83,8 @@ if __name__ == "__main__":
 
     print "What are you doing?:",
     post = raw_input()
-    print api.status_update(post)
+    api.status_update(post)
 
-    for status in api.home_timeline():
+    for status in api.home_timeline(count = 100):
         print "%15s: %s" % (
             status["user"]["screen_name"], status["text"])

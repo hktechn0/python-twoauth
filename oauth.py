@@ -92,16 +92,16 @@ class oauth():
         self._init_params()
         
         api_params = urllib.urlencode(add_params)
-
+        
         if method == "GET":
             req = urllib2.Request("%s?%s" % (url, api_params))
         elif method == "POST":
             req = urllib2.Request(url, api_params)
         else:
             raise
-
+        
         for p in add_params:
-            add_params[p] = urllib.quote(add_params[p], "")
+            add_params[p] = urllib.quote(str(add_params[p]), "")
         
         req.add_header("Authorization", 
                        self.oauth_header(url, method, add_params,
