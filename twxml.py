@@ -15,7 +15,8 @@ class twitter_xml:
 
     def mode_init(self, name, attrs):
         self.mode = name
-        if name == "statuses" or name == "users":
+        elem = ["statuses", "users"]
+        if name in elem:
             pass
         else:
             self.name.append(name)
@@ -28,8 +29,6 @@ class twitter_xml:
 
     def end_element(self, name):
         cdata = self.cdata.strip(" \n")
-
-#        print self.data, self.name, name
 
         if cdata:
             self.data.append([name, cdata])
