@@ -1,14 +1,20 @@
 import urllib2
 import xml.parsers.expat
 
+# XML Parser for Twitter API
+
 class twitter_xml:
     def __init__(self, xmlstr):
+        # stack
         self.name = []
         self.data = []
         self.cdata = ""
+
+        # mode stack
         self.mode = []
         self.nmode = ""
-
+        
+        # XML Parser
         self.p = xml.parsers.expat.ParserCreate()
         self.p.StartElementHandler = self.start_element
         self.p.CharacterDataHandler = self.char_data
@@ -16,25 +22,31 @@ class twitter_xml:
         self.p.Parse(xmlstr)
 
     def start_element(self, name, attrs):
-        self.cdata = ""
+        # push element name
         self.name.append(name)
         self.mode.append(self.nmode)
+        self.cdata = ""
         
+        # type="array" mode check
         if attrs and attrs["type"] and attrs["type"] == "array":
             self.nmode = "array"
         else:
             self.nmode = ""
 
     def end_element(self, name):
+        # character data strip
         cdata = self.cdata.strip(" \n")
 
+        # pop mode and set next mode
         mode = self.mode.pop()
         self.nmode = mode
 
         if cdata:
+            # string element
             self.data.append([name, cdata])
             self.cdata = ""
         elif self.name and name == self.name[-1]:
+            # empty element
             self.data.append([name, ""])
         else:
             elements = []
@@ -42,14 +54,18 @@ class twitter_xml:
                 elements.append(self.data.pop())
 
             self.name.append(name)
+
             if mode:
+                # array element
                 self.data.append(dict(elements))
             else:
                 if isinstance(elements[0], dict):
+                    # array parent
                     self.data.append([name, elements])
                 else:
+                    # others
                     self.data.append([name, dict(elements)])
-
+    
     def char_data(self, c):
         self.cdata += c
 
