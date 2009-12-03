@@ -58,8 +58,7 @@ class twoauth():
         getxml = urllib2.urlopen(req).read()
 
         user = twxml.xmlparse(getxml)
-        
-        self.user = user[0]
+        self.user = user
     
     def _api(self, a, b, params):
         params = self._rm_noparams(params)
@@ -128,7 +127,7 @@ class twoauth():
     def status_update(self, status, reply_to = ""):
         params = { "status" : status,
                    "in_reply_to_status_id": reply_to }
-        return self._post("statuses", "update", params)
+        return self._api("statuses", "update", params)
 
 if __name__ == "__main__":
     import sys
@@ -137,14 +136,15 @@ if __name__ == "__main__":
 
     print api.user["screen_name"]
 
-#    print "What are you doing?:",
-#    post = raw_input()
-#    api.status_update(post)
+    print "What are you doing?:",
+    post = raw_input()
+    api.status_update(post)
 
-#    for status in api.home_timeline(count = 100):
+    for status in api.home_timeline(count = 10):
 #    for status in api.rt_by_me(count = 100):
-    print api.home_timeline()
-    print api.lists_memberships()
 #    for status in api.lists_memberships():
-#        print "%15s: %s" % (
-#            status["user"]["screen_name"], status["text"])
+        print "%15s: %s" % (
+            status["user"]["screen_name"], status["text"])
+
+    for l in api.lists_memberships()["lists"]:
+        print "%30s %s" % (l["full_name"], l["member_count"])
