@@ -47,7 +47,7 @@ if __name__ == "__main__":
             print s["user"]["screen_name"]
         raw_input()
 
-    if True:
+    if False:
         print "User:"
         print api.user_show(screen_name = "hktechno")["status"]["text"]
 
@@ -60,13 +60,15 @@ if __name__ == "__main__":
                 print s["screen_name"]
             raw_input()
 
-    print "Lists:"
-    for l in api.lists_memberships()["lists"]:
-        print "%30s %s" % (l["full_name"], l["member_count"])
+    if False:
+        print "Lists:"
+        for l in api.lists_memberships()["lists"]:
+            print "%30s %s" % (l["full_name"], l["member_count"])
 
-    print "ReTweet:"
-    for status in api.rt_to_me(count = 10):
-        print "Retweeted by %s: %s: %s" % (
-            status["retweeted_status"]["user"]["screen_name"],
-            status["user"]["screen_name"],
-            status["retweeted_status"]["text"])
+
+    if True:
+        print "Direct Message"
+        for dm in api.dm_list():
+            print dm["text"]
+            
+        #api.dm_destroy(dm["id"])
