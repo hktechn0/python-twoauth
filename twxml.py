@@ -20,19 +20,21 @@ class twitter_xml:
         self.p.CharacterDataHandler = self.char_data
         self.p.EndElementHandler = self.end_element
         self.p.Parse(xmlstr)
-
+    
     def start_element(self, name, attrs):
         # push element name
         self.name.append(name)
         self.mode.append(self.nmode)
         self.cdata = ""
+        self.nmode = ""
         
         # type="array" mode check
-        if attrs and attrs["type"] and attrs["type"] == "array":
-            self.nmode = "array"
-        else:
-            self.nmode = ""
-
+        if attrs:
+            for a in attrs:
+                if a == "type" and attrs["type"] == "array":
+                    self.nmode = "array"
+                    break
+    
     def end_element(self, name):
         # character data strip
         cdata = self.cdata.strip(" \n")

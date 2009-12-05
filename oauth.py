@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
+
 import time, random
 import urllib, urllib2
 import hmac, hashlib
@@ -83,28 +86,35 @@ class oauth():
         
         plist = []
         for p in self.params:
-            plist.append('%s="%s"' % (p, urllib.quote(self.params[p])))
+            plist.append('%s="%s"' % (
+                    self._oquote(p), self._oquote(self.params[p])))
         
         return "OAuth %s" % (", ".join(plist))
     
     # Return urllib2.Request Object for OAuth
     def oauth_request(self, url, method = "GET", add_params = {}):
         self._init_params()
-        
-        api_params = urllib.urlencode(add_params)
-        
+
+        enc_params = {}
+        if add_params:
+            api_params = urllib.urlencode(add_params)
+            for p in add_params:
+                enc_params[self._oquote(p)] = self._oquote(add_params[p])
+        else:
+            api_params = ""
+
         if method == "GET":
-            req = urllib2.Request("%s?%s" % (url, api_params))
+            if add_params:
+                req = urllib2.Request("%s?%s" % (url, api_params))
+            else:
+                req = urllib2.Request(url)
         elif method == "POST":
             req = urllib2.Request(url, api_params)
         else:
             raise
         
-        for p in add_params:
-            add_params[p] = urllib.quote(str(add_params[p]), "")
-        
         req.add_header("Authorization", 
-                       self.oauth_header(url, method, add_params,
+                       self.oauth_header(url, method, enc_params,
                                          secret = self.asecret))
         
         return req
@@ -134,14 +144,18 @@ class oauth():
             plist.append("%s=%s" % (i, sigparams[i]))
         
         pstr = "&".join(plist)
-        msg = "%s&%s&%s" % (method, urllib.quote(url, ""), 
-                            urllib.quote(pstr, ""))
+        msg = "%s&%s&%s" % (
+            method, self._oquote(url), self._oquote(pstr))
         
         # Calculate Signature
-        h = hmac.new("%s&%s" % (self.csecret, secret), msg, hashlib.sha1)
+        h = hmac.new("%s&%s" % (
+                self.csecret, secret), msg, hashlib.sha1)
         sig = h.digest().encode("base64").strip()
         
         return sig
+    
+    def _oquote(self, s):
+        return urllib.quote(str(s), "-._~")
 
 if __name__ == "__main__":
     import sys

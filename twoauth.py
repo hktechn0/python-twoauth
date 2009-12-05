@@ -5,7 +5,7 @@ import urllib, urllib2
 
 #
 # OAuth supported Twitter library for Python
-# - Hirotaka Kawata - techno
+# - Hirotaka Kawata (@hktechno)
 # - info@techno-st.net
 # - http://www.techno-st.net/
 #
@@ -41,9 +41,14 @@ class twoauth():
             "verify_credentials" : twurl + "account/verify_credentials" + api_t
             },
         "lists" : {
-            "index"       : apiurl + "%user%" + "/lists" + api_t,
-            "show"        : apiurl + "%user%" + "/lists/" + "%id" + api_t,
-            "memberships" : apiurl + "%user%" + "/lists/memberships" + api_t
+            "create"        : apiurl + "%user%/lists" + api_t,
+            "update"        : apiurl + "%user%/lists/%id%" + api_t,
+            "index"         : apiurl + "%user%/lists" + api_t,
+            "show"          : apiurl + "%user%/lists/%id%" + api_t,
+            "destroy"       : apiurl + "%user%/lists/%id%" + api_t,
+            "statuses"      : apiurl + "%user%/lists/%id%/statuses" + api_t,
+            "memberships"   : apiurl + "%user%/lists/memberships" + api_t,
+            "subscriptions" : apiurl + "%user%/lists/subscriptions" + api_t
             },
         "dm" : {
             "list"    : twurl + "direct_messages" + api_t,
@@ -77,9 +82,14 @@ class twoauth():
             "verify_credentials" : "GET"
             },
         "lists" : {
-            "index"       : "GET",
-            "show"        : "GET",
-            "memberships" : "GET"
+            "create"        : "POST",
+            "update"        : "POST",
+            "index"         : "GET",
+            "show"          : "GET",
+            "destroy"       : "POST",
+            "statuses"      : "GET",
+            "memberships"   : "GET",
+            "subscriptions" : "GET"
             },
         "dm" : {
             "list"    : "GET",
@@ -103,39 +113,38 @@ class twoauth():
     
     def _api(self, a, b, params = {}):
         params = self._rm_noparams(params)
-        return twxml.xmlparse(
-            urllib2.urlopen(
-                self.oauth.oauth_request(
-                    self.url[a][b],
-                    self.method[a][b], params)).read())
+        xml = urllib2.urlopen(
+            self.oauth.oauth_request(
+                self.url[a][b],
+                self.method[a][b], params)).read()
+        return twxml.xmlparse(xml)
     
     def _api2(self, url, params = {}, method = "GET"):
         params = self._rm_noparams(params)
-        return twxml.xmlparse(
-            urllib2.urlopen(
-                self.oauth.oauth_request(
-                    url, method, params)).read())
+        print url
+        xml = urllib2.urlopen(
+            self.oauth.oauth_request(
+                url, method, params)).read()
+        return twxml.xmlparse(xml)
 
-    def _api_noauth(self, a = None, b = None,
-                    params = {}, url = None):
+    def _api_noauth(self, a = None, b = None, params = {},
+                    url = None):
         params = self._rm_noparams(params)
         paramstr = urllib.urlencode(params)
         
         if not url:
             url = self.url[a][b]
         
-        return twxml.xmlparse(
-            urllib2.urlopen(
-                "%s?%s" % (url, paramstr)).read())
+        xml = urllib2.urlopen("%s?%s" % (url, paramstr)).read()
+        return twxml.xmlparse(xml)
     
-    def _api_lists(self, m, user, _id = "", params = {}):
+    def _api_lists(self, m, user = "", _id = "", params = {}):
         if not user:
             user = self.user["screen_name"]
         url = self.url["lists"][m]
-        url = url.replace("%user%", user)
-        url = url.replace("%id%", _id)
-        return self._api2(url, params,
-                          self.method["lists"][m])
+        url = url.replace("%user%", str(user))
+        url = url.replace("%id%", str(_id))
+        return self._api2(url, params, self.method["lists"][m])
     
     def _rm_noparams(self, params):
         flg = True
@@ -255,16 +264,44 @@ class twoauth():
     #
     # Lists Methods
     #
-    def lists_index(self, user = None, cursor = ""):
+    def lists_create(self, name, mode = "", description = ""):
+        params = { "name" : name, "mode" : mode,
+                   "description" : description }
+        return self._api_lists("create", params = params)
+
+    def lists_update(self, _id, name = "", mode = "", description = ""):
+        params = { "name" : name, "mode" : mode,
+                   "description" : description }
+        return self._api_lists("update", _id = _id, params = params)
+    
+    def lists_index(self, user = "", cursor = ""):
         params = { "cursor" : cursor }
         return self._api_lists("index", user, params = params)
     
-    def lists_show(self, _id, user = None):
+    def lists_show(self, _id, user = ""):
         return self._api_lists("show", user, _id)
 
-    def lists_memberships(self, user = None, cursor = ""):
+    def lists_destroy(self, _id):
+        params = { "_method" : "DELETE" }
+        return self._api_lists("destroy", _id = _id, params = params)
+
+    def lists_statuses(self, _id, user = "",
+                       since_id = "", max_id = "", count = "", page = ""):
+        params = { "since_id" : since_id, "max_id" : max_id,
+                   "count" : count, "page" : page }
+        return self._api_lists("statuses", user, _id, params)
+    
+    def lists_memberships(self, user = "", cursor = ""):
         params = { "cursor" : cursor }
         return self._api_lists("memberships", user, params = params)
+
+    def lists_subscriptions(self, user = "", cursor = ""):
+        params = { "cursor" : cursor }
+        return self._api_lists("subscriptions", user, params = params)
+    
+    #
+    # List Subscribers Methods
+    #
 
     #
     # Direct Message Methods
@@ -274,7 +311,7 @@ class twoauth():
         params = { "since_id" : since_id, "max_id" : max_id,
                    "count" : count, "page" : page }
         return self._api("dm", "list", params)
-
+    
     def dm_destroy(self, _id):
         return self._api2(
             self.url["dm"]["destroy"].replace("%id%", str(_id)),
