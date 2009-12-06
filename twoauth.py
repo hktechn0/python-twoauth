@@ -86,7 +86,7 @@ class twoauth():
             "update"        : "POST",
             "index"         : "GET",
             "show"          : "GET",
-            "destroy"       : "POST",
+            "destroy"       : "DELETE",
             "statuses"      : "GET",
             "memberships"   : "GET",
             "subscriptions" : "GET"
@@ -121,7 +121,6 @@ class twoauth():
     
     def _api2(self, url, params = {}, method = "GET"):
         params = self._rm_noparams(params)
-        print url
         xml = urllib2.urlopen(
             self.oauth.oauth_request(
                 url, method, params)).read()
@@ -141,10 +140,23 @@ class twoauth():
     def _api_lists(self, m, user = "", _id = "", params = {}):
         if not user:
             user = self.user["screen_name"]
+
         url = self.url["lists"][m]
         url = url.replace("%user%", str(user))
         url = url.replace("%id%", str(_id))
+
         return self._api2(url, params, self.method["lists"][m])
+
+    def _api_delete(self, a, b, user = "", _id = ""):
+        if not user:
+            user = self.user["screen_name"]
+        
+        url = self.url[a][b]
+        url = url.replace("%user%", str(user))
+        url = url.replace("%id%", str(_id))
+        
+        res = self.oauth.oauth_http_request(url, "DELETE")
+        return twxml.xmlparse(res.read())
     
     def _rm_noparams(self, params):
         flg = True
@@ -282,8 +294,7 @@ class twoauth():
         return self._api_lists("show", user, _id)
 
     def lists_destroy(self, _id):
-        params = { "_method" : "DELETE" }
-        return self._api_lists("destroy", _id = _id, params = params)
+        return self._api_delete("lists", "destroy", _id = _id)
 
     def lists_statuses(self, _id, user = "",
                        since_id = "", max_id = "", count = "", page = ""):

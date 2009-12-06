@@ -3,6 +3,7 @@
 
 import time, random
 import urllib, urllib2
+import httplib, urlparse
 import hmac, hashlib
 import cgi
 
@@ -79,8 +80,7 @@ class oauth():
         return token_info
     
     # Return Authorization Header String
-    def oauth_header(self, url, method = "GET", add_params = {},
-                     secret = ""):
+    def oauth_header(self, url, method = "GET", add_params = {}, secret = ""):
         sig = self._make_signature(url, method, secret, add_params)
         self.params["oauth_signature"] = sig
         
@@ -113,11 +113,31 @@ class oauth():
         else:
             raise
         
-        req.add_header("Authorization", 
-                       self.oauth_header(url, method, enc_params,
-                                         secret = self.asecret))
+        req.add_header("Authorization", self.oauth_header(
+                url, method, enc_params, secret = self.asecret))
         
         return req
+
+    # Return httplib.HTTPResponse (for DELETE Method
+    def oauth_http_request(self, url, method = "GET", add_params = {}):
+        self._init_params()
+        
+        enc_params = {}
+        if add_params:
+            api_params = urllib.urlencode(add_params)
+            for p in add_params:
+                enc_params[self._oquote(p)] = self._oquote(add_params[p])
+        else:
+            api_params = ""
+        
+        urlp = urlparse.urlparse(url)
+        con = httplib.HTTPConnection(urlp.netloc)
+        
+        con.request(method, urlp.path, api_params, {
+                "Authorization" : 
+                self.oauth_header(url, method, enc_params, self.asecret)})
+        
+        return con.getresponse()
     
     def _init_params(self, token = None):
         if token == None:

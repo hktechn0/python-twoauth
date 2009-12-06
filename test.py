@@ -88,10 +88,7 @@ if __name__ == "__main__":
         print li["full_name"], li["subscriber_count"], li["member_count"]
 
         print "Destroy:",
-        try:
-            print api.lists_destroy(lid)["id"]
-        except Exception, e:
-            print e.read()
+        print api.lists_destroy(lid)["id"]
         raw_input()
         
         print "Statuses:"
@@ -103,7 +100,7 @@ if __name__ == "__main__":
             print "%30s %s" % (l["full_name"], l["member_count"])
         
         print "Subscriptions:"
-        for l in api.lists_subscriptions()["lists"]:
+        for l in api.lists_subscriptions("hktechno")["lists"]:
             print "%30s %s" % (l["full_name"], l["member_count"])
         raw_input()
             
