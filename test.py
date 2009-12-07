@@ -6,7 +6,7 @@ import twoauth
 if __name__ == "__main__":
     import sys
     
-    api = twoauth.twoauth(
+    api = twoauth.api(
         sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
 
     timeline = False

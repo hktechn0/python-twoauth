@@ -1,7 +1,7 @@
-import oauth
-import twxml
-
 import urllib, urllib2
+
+import oauth
+import twitterxml
 
 #
 # OAuth supported Twitter library for Python
@@ -10,7 +10,7 @@ import urllib, urllib2
 # - http://www.techno-st.net/
 #
 
-class twoauth():
+class api():
     twurl = "http://twitter.com/"
     apiurl = "http://api.twitter.com/1/"
     api_t = ".xml"
@@ -112,7 +112,7 @@ class twoauth():
             self.url["account"]["verify_credentials"])
         getxml = urllib2.urlopen(req).read()
 
-        user = twxml.xmlparse(getxml)
+        user = twitterxml.xmlparse(getxml)
         self.user = user
     
     def _api(self, a, b, params = {}):
@@ -121,14 +121,14 @@ class twoauth():
             self.oauth.oauth_request(
                 self.url[a][b],
                 self.method[a][b], params)).read()
-        return twxml.xmlparse(xml)
+        return twitterxml.xmlparse(xml)
     
     def _api2(self, url, params = {}, method = "GET"):
         params = self._rm_noparams(params)
         xml = urllib2.urlopen(
             self.oauth.oauth_request(
                 url, method, params)).read()
-        return twxml.xmlparse(xml)
+        return twitterxml.xmlparse(xml)
 
     def _api_noauth(self, a = None, b = None, params = {},
                     url = None):
@@ -139,7 +139,7 @@ class twoauth():
             url = self.url[a][b]
         
         xml = urllib2.urlopen("%s?%s" % (url, paramstr)).read()
-        return twxml.xmlparse(xml)
+        return twitterxml.xmlparse(xml)
     
     def _api_lists(self, m, user = "", _id = "", params = {}):
         if not user:
@@ -160,7 +160,7 @@ class twoauth():
         url = url.replace("%id%", str(_id))
         
         res = self.oauth.oauth_http_request(url, "DELETE")
-        return twxml.xmlparse(res.read())
+        return twitterxml.xmlparse(res.read())
     
     def _rm_noparams(self, params):
         flg = True
@@ -345,7 +345,7 @@ class twoauth():
 if __name__ == "__main__":
     import sys
 
-    api = twoauth(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    api = api(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
 
     print api.user["screen_name"]
     for status in api.home_timeline(count = 10):

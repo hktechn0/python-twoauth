@@ -3,7 +3,7 @@ import xml.parsers.expat
 
 # XML Parser for Twitter API
 
-class twitter_xml:
+class twitterxml:
     def __init__(self, xmlstr):
         # stack
         self.name = []
