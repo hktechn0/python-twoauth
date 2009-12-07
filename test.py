@@ -12,8 +12,8 @@ if __name__ == "__main__":
     timeline = False
     status = False
     user = False
-    lists = True
-    dm = False
+    lists = False
+    dm = True
     
     print "screen_name:", api.user["screen_name"]
 
@@ -106,7 +106,17 @@ if __name__ == "__main__":
             
     if dm:
         print "Direct Message"
+        print "Inbox:"
         for dm in api.dm_list():
             print dm["text"]
-            
-        #api.dm_destroy(dm["id"])
+
+        print "Sent:"
+        for dm in api.dm_sent():
+            print dm["text"]
+        
+        print "Send:"
+        dm = api.dm_new("hktechno", "hello")
+        raw_input()
+        print "Destroy:"
+        api.dm_destroy(dm["id"])
+        raw_input()

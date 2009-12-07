@@ -52,6 +52,8 @@ class twoauth():
             },
         "dm" : {
             "list"    : twurl + "direct_messages" + api_t,
+            "sent"    : twurl + "direct_messages/sent" + api_t,
+            "new"     : twurl + "direct_messages/new" + api_t,
             "destroy" : twurl + "direct_messages/destroy/" + "%id%" + api_t
             }
         }
@@ -93,6 +95,8 @@ class twoauth():
             },
         "dm" : {
             "list"    : "GET",
+            "sent"    : "GET",
+            "new"     : "POST",
             "destroy" : "POST"
             }
         }
@@ -322,11 +326,21 @@ class twoauth():
         params = { "since_id" : since_id, "max_id" : max_id,
                    "count" : count, "page" : page }
         return self._api("dm", "list", params)
+
+    def dm_sent(self, since_id = "", max_id = "",
+            count = "", page = ""):
+        params = { "since_id" : since_id, "max_id" : max_id,
+                   "count" : count, "page" : page }
+        return self._api("dm", "sent", params)
     
     def dm_destroy(self, _id):
         return self._api2(
             self.url["dm"]["destroy"].replace("%id%", str(_id)),
             method = self.method["dm"]["destroy"])
+
+    def dm_new(self, user, text):
+        params = { "user" : user, "text" : text }
+        return self._api("dm", "new", params)
 
 if __name__ == "__main__":
     import sys
