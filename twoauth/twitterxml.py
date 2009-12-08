@@ -72,7 +72,7 @@ class twitterxml:
         self.cdata += c
 
 def xmlparse(xml_text):
-    parsed = twitter_xml(xml_text)
+    parsed = twitterxml(xml_text)
     parsed.data = parsed.data[0][1]
     
     return parsed.data
