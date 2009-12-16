@@ -48,13 +48,16 @@ class api():
             "destroy"       : apiurl + "%user%/lists/%id%" + api_t,
             "statuses"      : apiurl + "%user%/lists/%id%/statuses" + api_t,
             "memberships"   : apiurl + "%user%/lists/memberships" + api_t,
-            "subscriptions" : apiurl + "%user%/lists/subscriptions" + api_t
+            "subscriptions" : apiurl + "%user%/lists/subscriptions" + api_t,
+            "mlist"         : apiurl + "%user%/%id%/members" + api_t,
+            "madd"          : apiurl + "%user%/%id%/members" + api_t,
+            "mremove"       : apiurl + "%user%/%id%/members" + api_t,
             },
         "dm" : {
             "list"    : twurl + "direct_messages" + api_t,
             "sent"    : twurl + "direct_messages/sent" + api_t,
             "new"     : twurl + "direct_messages/new" + api_t,
-            "destroy" : twurl + "direct_messages/destroy/" + "%id%" + api_t
+            "destroy" : twurl + "direct_messages/destroy/" + "%id%" + api_t,
             }
         }
 
@@ -91,7 +94,10 @@ class api():
             "destroy"       : "DELETE",
             "statuses"      : "GET",
             "memberships"   : "GET",
-            "subscriptions" : "GET"
+            "subscriptions" : "GET",
+            "mlist"         : "GET",
+            "madd"          : "POST",
+            "mremove"       : "DELETE",
             },
         "dm" : {
             "list"    : "GET",
@@ -151,7 +157,7 @@ class api():
 
         return self._api2(url, params, self.method["lists"][m])
 
-    def _api_delete(self, a, b, user = "", _id = ""):
+    def _api_delete(self, a, b, user = "", _id = "", params = {}):
         if not user:
             user = self.user["screen_name"]
         
@@ -159,7 +165,8 @@ class api():
         url = url.replace("%user%", str(user))
         url = url.replace("%id%", str(_id))
         
-        res = self.oauth.oauth_http_request(url, "DELETE")
+        params = self._rm_noparams(params)
+        res = self.oauth.oauth_http_request(url, "DELETE", params)
         return twitterxml.xmlparse(res.read())
     
     def _rm_noparams(self, params):
@@ -315,9 +322,35 @@ class api():
         return self._api_lists("subscriptions", user, params = params)
     
     #
+    # Lists Members Methods
+    #
+    def lists_mlist(self, _id, user = "", cursor = ""):
+        params = { "cursor" : cursor }
+        return self._api_lists("mlist", user, _id, params)
+
+    def lists_madd(self, member, _id, user = ""):
+        params = { "id" : member }
+        return self._api.lists("madd", user, _id, params)
+
+    def lists_mremove(self, member, _id, user = ""):
+        params = { "id" : member }
+        return self._api.lists("mremove", user, _id, params)
+    
+    def lists_mshow(self, member, _id, user = "", cursor = ""):
+        pass
+
+    #
     # List Subscribers Methods
     #
-
+    def lists_slist(self):
+        pass
+    def lists_sadd(self):
+        pass
+    def lists_sremove(self):
+        pass
+    def lists_sshow(self):
+        pass
+    
     #
     # Direct Message Methods
     #
