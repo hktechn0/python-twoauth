@@ -38,7 +38,14 @@ class api():
             "search" : apiurl + "users/search" + api_t
             },
         "account" : {
-            "verify_credentials" : twurl + "account/verify_credentials" + api_t
+            "verify_credentials" : twurl + "account/verify_credentials" + api_t,
+            "rate_limit"         : twurl + "account/rate_limit_status" + api_t,
+            "end_session"        : twurl + "account/end_session" + api_t,
+            "delivery_device"    : twurl + "account/update_delivery_device" + api_t,
+            "profile_colors"     : twurl + "account/update_profile_colors" + api_t,
+            "profile_image"      : twurl + "account/update_profile_image" + api_t,
+            "profile_back"       : twurl + "account/update_profile_background_image" + api_t,
+            "update_profile"     : twurl + "account/update_profile" + api_t,
             },
         "lists" : {
             "create"        : apiurl + "%user%/lists" + api_t,
@@ -91,7 +98,14 @@ class api():
             "search" : "GET"
             },
         "account" : {
-            "verify_credentials" : "GET"
+            "verify_credentials" : "GET",
+            "rate_limit"         : "GET",
+            "end_session"        : "POST",
+            "delivery_device"    : "POST",
+            "profile_colors"     : "POST",
+            "profile_image"      : "POST",
+            "profile_back"       : "POST",
+            "update_profile"     : "POST",
             },
         "lists" : {
             "create"        : "POST",
@@ -369,6 +383,41 @@ class api():
         params[self._idtype(source, sp)] = source
         
         return self._api("friendship", "show", params, noauth = True)
+
+    #
+    # Social Graph Methods
+    #
+
+    #
+    # Account Methods
+    #
+    def verify_credentials(self):
+        return self._api("account", "verify_credentials")
+
+    def rate_limit(self, ip_limit = False):
+        # ip_limit: True: IP Limit, False: Account Limit
+        return self._api("account", "rate_limit", noauth = ip_limit)
+    
+    def end_session(self):
+        return self._api("account", "end_session")
+
+    def delivery_device(self, device, **params):
+        params["device"] = device
+        return self._api("account", "delivery_device", params)
+
+    def profile_colors(self, **params):
+        return self._api("account", "profile_colors", params)
+
+    def profile_image(self, image, **params):
+        params["image"] = image
+        return self._api("account", "profile_image", params)
+
+    def profile_background_image(self, image, **params):
+        params["image"] = image
+        return self._api("account", "profile_back", params)
+
+    def profile(self, **params):
+        return self._api("account", "update_profile", params)
 
 if __name__ == "__main__":
     import sys

@@ -14,7 +14,8 @@ if __name__ == "__main__":
     user = False
     lists = False
     dm = False
-    friendship = True
+    friendship = False
+    account = True
     
     print "screen_name:", api.user["screen_name"]
 
@@ -144,4 +145,35 @@ if __name__ == "__main__":
 
         print "Show:"
         print api.friends_show("hktechno")
+        raw_input()
+
+    if account:
+        print "Account:"
+
+        print "Verify Credentials:"
+        a = api.verify_credentials()
+        print a["id"]
+        print a["name"]
+        print a["screen_name"]
+        print a["status"]["text"]
+
+        print "Rate Limit:"
+        print api.rate_limit(), api.rate_limit(True)
+
+        print "End Session:"
+        print api.end_session()
+        raw_input()
+
+        print "Update profile colors:"
+        c = int(a["profile_background_color"])
+        c = 0xffffff - c
+        c = "%x" % c
+        try:
+            api.profile_colors(profile_background_color = c)
+        except Exception, e:
+            print e.read()
+
+        print "Update profile:"
+        import time
+        api.profile(description = time.time())
         raw_input()
