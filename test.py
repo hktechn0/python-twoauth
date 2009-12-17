@@ -12,8 +12,9 @@ if __name__ == "__main__":
     timeline = False
     status = False
     user = False
-    lists = True
-    dm = True
+    lists = False
+    dm = False
+    friendship = True
     
     print "screen_name:", api.user["screen_name"]
 
@@ -126,4 +127,21 @@ if __name__ == "__main__":
         raw_input()
         print "Destroy:"
         api.dm_destroy(dm["id"])
+        raw_input()
+
+    if friendship:
+        print "Friendships:"
+
+        print "Create:"
+        api.friends_create("hktechno")
+
+        print "Exists:"
+        print api.friends_exists(api.user["id"], "hktechno")
+        raw_input()
+
+        print "Destroy:"
+        api.friends_destroy("hktechno")
+
+        print "Show:"
+        print api.friends_show("hktechno")
         raw_input()

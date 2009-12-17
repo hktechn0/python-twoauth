@@ -59,7 +59,13 @@ class api():
             "sent"    : twurl + "direct_messages/sent" + api_t,
             "new"     : twurl + "direct_messages/new" + api_t,
             "destroy" : twurl + "direct_messages/destroy/" + "%id%" + api_t,
-            }
+            },
+        "friendship" : {
+            "create"  : twurl + "friendships/create/%user%" + api_t,
+            "destroy" : twurl + "friendships/destroy/%user%" + api_t,
+            "exists"  : twurl + "friendships/exists" + api_t,
+            "show"    : twurl + "friendships/show" + api_t,
+            },
         }
 
     method = {
@@ -106,7 +112,14 @@ class api():
             "sent"    : "GET",
             "new"     : "POST",
             "destroy" : "POST"
-            }
+            },
+        "friendship" : {
+            "create"  : "POST",
+            "destroy" : "POST",
+            "exists"  : "GET",
+            "show"    : "GET",
+            },
+
         }
 
     def __init__(self, ckey, csecret, atoken, asecret,
@@ -123,23 +136,28 @@ class api():
         user = twitterxml.xmlparse(getxml)
         self.user = user
     
-    def _api(self, a, b, params = {}, **replace):
+    def _api(self, a, b, params = {}, noauth = False, **replace):
         url = self._urlreplace(a, b, replace)
         method = self.method[a][b]
         params = self._rm_noparams(params)
-        print url, params
+        
+        if noauth:
+            # try no auth request
+            try:
+                return self._api_noauth(url, params)
+            except urllib2.HTTPError, e:
+                if e.code == 403:
+                    pass
+                else:
+                    raise
+        
         req = self.oauth.oauth_request(url, method, params)
         xml = urllib2.urlopen(req).read()
         return twitterxml.xmlparse(xml)
     
-    def _api_noauth(self, a = None, b = None, params = {},
-                    url = None):
-        params = self._rm_noparams(params)
+    def _api_noauth(self, url, params):
+        # No use OAuth, GET only
         paramstr = urllib.urlencode(params)
-        
-        if not url:
-            url = self.url[a][b]
-        
         xml = urllib2.urlopen("%s?%s" % (url, paramstr)).read()
         return twitterxml.xmlparse(xml)
     
@@ -166,11 +184,13 @@ class api():
                     break
         return params
 
-    def _idtype(self, uid):
+    def _idtype(self, uid, ret = ("user_id", "screen_name")):
         if str(uid).isdigit():
-            return "user_id"
+            # numeric id
+            return ret[0]
         else:
-            return "screen_name"
+            # screen_name
+            return ret[1]
 
     def _urlreplace(self, a, b, replace):
         url = self.url[a][b]
@@ -187,7 +207,7 @@ class api():
     # Timeline Methods
     #
     def public_timeline(self):
-        return self._api_noauth("statuses", "public_timeline")
+        return self._api("statuses", "public_timeline", noauth = True)
     
     def home_timeline(self, **params):
         return self._api("statuses", "home_timeline", params)
@@ -197,10 +217,7 @@ class api():
 
     def user_timeline(self, user = "", **params):
         params[self._idtype(user)] = user
-        try:
-            data = self._api_noauth("statuses", "user_timeline", params)
-        except urllib2.HTTPError:
-            data = self._api("statuses", "user_timeline", params)
+        data = self._api("statuses", "user_timeline", params, noauth = True)
         return data
     
     def mentions(self, **params):
@@ -219,31 +236,27 @@ class api():
     # Status Methods
     #
     def status_show(self, _id):
-        try:
-            url = self._urlreplace("statuses", "show", {"id" : _id})
-            return self._api_noauth(url = url)
-        except urllib2.HTTPError:
-            return self._api("statuses", "show", id = _id)
-
+        return self._api("statuses", "show", noauth = True, id = _id)
+    
     def status_update(self, status, **params):
         params["status"] = status
         return self._api("statuses", "update", params)
-
+    
     def status_destroy(self, _id):
         return self._api("statuses", "destroy", id = _id)
-
+    
     def status_retweet(self, _id):
         return self._api("statuses", "retweet", id = _id)
     
     def status_retweets(self, _id):
         return self._api("statuses", "retweets", id = _id)
-
+    
     #
     # User Methods
     #
     def user_show(self, user, **params):
         params[self._idtype(user)] = user
-        return self._api("users", "show", params)
+        return self._api("users", "show", params, noauth = True)
     
     def user_search(self, q, **params):
         params["q"] = q
@@ -263,7 +276,7 @@ class api():
     def lists_create(self, name, **params):
         params["name"] = name
         return self._api("lists", "create", params)
-
+    
     def lists_update(self, _id, **params):
         return self._api("lists", "update", params, id = _id)
     
@@ -272,16 +285,18 @@ class api():
     
     def lists_show(self, _id, user = "", **params):
         return self._api("lists", "show", user = user, id = _id)
-
+    
     def lists_destroy(self, _id, **params):
-        return self._api_delete("lists", "destroy", _id = _id, params = params)
-
+        return self._api_delete("lists", "destroy", 
+                                _id = _id, params = params)
+    
     def lists_statuses(self, _id, user = "", **params):
-        return self._api("lists", "statuses", params, user = user, id = _id)
+        return self._api("lists", "statuses", params, noauth = True,
+                         user = user, id = _id)
     
     def lists_memberships(self, user = "", **params):
         return self._api("lists", "memberships", params, user = user)
-
+    
     def lists_subscriptions(self, user = "", **params):
         return self._api("lists", "subscriptions", params, user = user)
     
@@ -331,6 +346,29 @@ class api():
         params["user"] = user
         params["text"] = text
         return self._api("dm", "new", params)
+
+    #
+    # Friendships Methods
+    #
+    def friends_create(self, user, **params):
+        return self._api("friendship", "create", params, user = user)
+
+    def friends_destroy(self, user, **params):
+        return self._api("friendship", "destroy", params, user = user)
+
+    def friends_exists(self, user_a, user_b, **params):
+        params["user_a"] = user_a
+        params["user_b"] = user_b
+        return self._api("friendship", "exists", params, noauth = True)
+    
+    def friends_show(self, target, source = "", **params):
+        tp = ("target_id", "target_screen_name")
+        params[self._idtype(target, tp)] = target
+        
+        sp = ("source_id", "source_screen_name")
+        params[self._idtype(source, sp)] = source
+        
+        return self._api("friendship", "show", params, noauth = True)
 
 if __name__ == "__main__":
     import sys
