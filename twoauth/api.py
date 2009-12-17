@@ -179,30 +179,27 @@ class api():
                     flg = True
                     break
         return params
-    
+
+    def _idtype(uid):
+        if str(uid).isdigit():
+            return "user_id"
+        else:
+            return "screen_name"
+
     #
     # Timeline Methods
     #
     def public_timeline(self):
         return self._api_noauth("statuses", "public_timeline")
 
-    def home_timeline(self, since_id = "", max_id = "",
-                      count = "", page = ""):
-        params = { "since_id" : since_id, "max_id" : max_id,
-                   "count" : count, "page" : page }
+    def home_timeline(self, **params):
         return self._api("statuses", "home_timeline", params)
 
-    def friends_timeline(self, since_id = "", max_id = "",
-                         count = "", page = ""):
-        params = { "since_id" : since_id, "max_id" : max_id,
-                   "count" : count, "page" : page }
+    def friends_timeline(self, **params):
         return self._api("statuses", "friends_timeline", params)
 
-    def user_timeline(self, user_id = "", screen_name = "",
-                      since_id = "", max_id = "", count = "", page = ""):
-        params = { "user_id" : user_id, "screen_name" : screen_name,
-                   "since_id" : since_id, "max_id" : max_id,
-                   "count" : count, "page" : page }
+    def user_timeline(self, **params):
+        # hmm... userid...
         try:
             data = self._api_noauth("statuses", "user_timeline", params)
         except urllib2.HTTPError:
@@ -210,28 +207,16 @@ class api():
 
         return data
 
-    def mentions(self, since_id = "", max_id = "",
-                         count = "", page = ""):
-        params = { "since_id" : since_id, "max_id" : max_id,
-                   "count" : count, "page" : page }
+    def mentions(self, **params):
         return self._api("statuses", "mentions", params)
     
-    def rt_by_me(self, since_id = "", max_id = "",
-                 count = "", page = ""):
-        params = { "since_id" : since_id, "max_id" : max_id,
-                   "count" : count, "page" : page }
+    def rt_by_me(self, **params):
         return self._api("statuses", "retweeted_by_me", params)
 
-    def rt_to_me(self, since_id = "", max_id = "",
-                 count = "", page = ""):
-        params = { "since_id" : since_id, "max_id" : max_id,
-                   "count" : count, "page" : page }
+    def rt_to_me(self, **params):
         return self._api("statuses", "retweeted_to_me", params)
 
-    def rt_of_me(self, since_id = "", max_id = "",
-                 count = "", page = ""):
-        params = { "since_id" : since_id, "max_id" : max_id,
-                   "count" : count, "page" : page }
+    def rt_of_me(self, **params):
         return self._api("statuses", "retweets_of_me", params)
 
     #
@@ -244,9 +229,8 @@ class api():
         except urllib2.HTTPError:
             return self._api2(url)
 
-    def status_update(self, status, reply_to = ""):
-        params = { "status" : status,
-                   "in_reply_to_status_id": reply_to }
+    def status_update(self, status, **params):
+        params["status"] = status
         return self._api("statuses", "update", params)
 
     def status_destroy(self, _id):
@@ -266,78 +250,65 @@ class api():
     #
     # User Methods
     #
-    def user_show(self, user_id = "", screen_name = ""):
-        params = { "user_id" : user_id, "screen_name" : screen_name }
+    def user_show(self, user):
+        params = { self._idtype(user) : user }
         return self._api("users", "show", params)
-
-    def user_search(self, q, par_page = "", page = ""):
-        params = { "q" : q, "par_page" : par_page, "page" : page }
+    
+    def user_search(self, **params):
         return self._api("users", "search", params)
 
-    def status_friends(self, user_id = "", screen_name = "", cursor = ""):
-        params = { "user_id" : user_id, "screen_name" : screen_name,
-                   "cursor" : "" }
+    def status_friends(self, user, **params):
+        params[self._idtype(user)] = user
         return self._api("statuses", "friends", params)
     
-    def status_followers(self, user_id = "", screen_name = "", cursor = ""):
-        params = { "user_id" : user_id, "screen_name" : screen_name,
-                   "cursor" : "" }
+    def status_followers(self, user, **params):
+        params[self._idtype(user)] = user
         return self._api("statuses", "followers", params)
     
     #
     # Lists Methods
     #
-    def lists_create(self, name, mode = "", description = ""):
-        params = { "name" : name, "mode" : mode,
-                   "description" : description }
+    def lists_create(self, name, **params):
+        params["name"] = name
         return self._api_lists("create", params = params)
 
-    def lists_update(self, _id, name = "", mode = "", description = ""):
-        params = { "name" : name, "mode" : mode,
-                   "description" : description }
+    def lists_update(self, _id, **params):
         return self._api_lists("update", _id = _id, params = params)
     
-    def lists_index(self, user = "", cursor = ""):
-        params = { "cursor" : cursor }
+    def lists_index(self, user = "", **params):
         return self._api_lists("index", user, params = params)
     
-    def lists_show(self, _id, user = ""):
+    def lists_show(self, _id, user = "", **params):
         return self._api_lists("show", user, _id)
 
-    def lists_destroy(self, _id):
-        return self._api_delete("lists", "destroy", _id = _id)
+    def lists_destroy(self, _id, **params):
+        return self._api_delete("lists", "destroy", _id = _id, params = params)
 
-    def lists_statuses(self, _id, user = "",
-                       since_id = "", max_id = "", count = "", page = ""):
-        params = { "since_id" : since_id, "max_id" : max_id,
-                   "count" : count, "page" : page }
+    def lists_statuses(self, _id, user = "", **params):
         return self._api_lists("statuses", user, _id, params)
     
-    def lists_memberships(self, user = "", cursor = ""):
-        params = { "cursor" : cursor }
+    def lists_memberships(self, user = "", **params):
         return self._api_lists("memberships", user, params = params)
 
-    def lists_subscriptions(self, user = "", cursor = ""):
-        params = { "cursor" : cursor }
+    def lists_subscriptions(self, user = "", **params):
         return self._api_lists("subscriptions", user, params = params)
     
     #
     # Lists Members Methods
     #
-    def lists_mlist(self, _id, user = "", cursor = ""):
-        params = { "cursor" : cursor }
+    def lists_mlist(self, _id, user = "", **params):
         return self._api_lists("mlist", user, _id, params)
 
-    def lists_madd(self, member, _id, user = ""):
-        params = { "id" : member }
+    def lists_madd(self, member, _id, user = "", **params):
+        params["id"] = member
         return self._api.lists("madd", user, _id, params)
 
-    def lists_mremove(self, member, _id, user = ""):
-        params = { "id" : member }
+    def lists_mremove(self, member, _id, user = "", **params):
+        params["id"] = member
         return self._api.lists("mremove", user, _id, params)
     
-    def lists_mshow(self, member, _id, user = "", cursor = ""):
-        pass
+    def lists_mshow(self, member, _id, user = "", **params):
+        
 
     #
     # List Subscribers Methods
@@ -354,16 +325,10 @@ class api():
     #
     # Direct Message Methods
     #
-    def dm_list(self, since_id = "", max_id = "",
-            count = "", page = ""):
-        params = { "since_id" : since_id, "max_id" : max_id,
-                   "count" : count, "page" : page }
+    def dm_list(self, **params):
         return self._api("dm", "list", params)
 
-    def dm_sent(self, since_id = "", max_id = "",
-            count = "", page = ""):
-        params = { "since_id" : since_id, "max_id" : max_id,
-                   "count" : count, "page" : page }
+    def dm_sent(self, **params):
         return self._api("dm", "sent", params)
     
     def dm_destroy(self, _id):
@@ -371,8 +336,9 @@ class api():
             self.url["dm"]["destroy"].replace("%id%", str(_id)),
             method = self.method["dm"]["destroy"])
 
-    def dm_new(self, user, text):
-        params = { "user" : user, "text" : text }
+    def dm_new(self, user, text, **params):
+        params["user"] = user
+        params["text"] = text
         return self._api("dm", "new", params)
 
 if __name__ == "__main__":
