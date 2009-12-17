@@ -12,7 +12,7 @@ if __name__ == "__main__":
     timeline = False
     status = False
     user = False
-    lists = False
+    lists = True
     dm = True
     
     print "screen_name:", api.user["screen_name"]
@@ -28,6 +28,7 @@ if __name__ == "__main__":
                api.rt_to_me(),
                api.rt_of_me())
         for tl in tls:
+            print len(tl)
             for status in tl:
                 print "%15s: %s" % (
                     status["user"]["screen_name"], status["text"])
@@ -46,7 +47,11 @@ if __name__ == "__main__":
         api.status_destroy(postid)
         print "Destroy!!"
         
-        api.status_retweet(6305546787)
+        try:
+            api.status_retweet(6768575868)
+        except Exception, e:
+            print e.read()
+
         print "ReTweet!!"
         
         for s in api.status_retweets(6305546787):
@@ -55,7 +60,7 @@ if __name__ == "__main__":
 
     if user:
         print "User:"
-        print api.user_show(screen_name = "hktechno")["status"]["text"]
+        print api.user_show("hktechno")["status"]["text"]
 
         tls = (api.user_search("python"),
                api.status_friends(),
@@ -69,13 +74,15 @@ if __name__ == "__main__":
     if lists:
         print "Lists:"
         print "Create:",
-        li = api.lists_create("testlist", "private", "testtest")
+        li = api.lists_create("testlist", mode = "private",
+                              description = "testtest")
         lid = int(li["id"])
         print lid, li["full_name"]
         raw_input()
 
         print "Update:", 
-        li = api.lists_update("testlist", "hogehoge", "private", "hoge")
+        li = api.lists_update("testlist", name = "hogehoge", 
+                              mode = "private", description = "hoge")
         print li["id"], li["full_name"]
         raw_input()
 
