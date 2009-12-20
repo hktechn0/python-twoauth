@@ -15,7 +15,8 @@ if __name__ == "__main__":
     lists = False
     dm = False
     friendship = False
-    account = True
+    account = False
+    favorites = True
     
     print "screen_name:", api.user["screen_name"]
 
@@ -176,4 +177,19 @@ if __name__ == "__main__":
         print "Update profile:"
         import time
         api.profile(description = time.time())
+        raw_input()
+
+    if favorites:
+        print "Favorites:"
+
+        print "Create:"
+        api.favorite_create(6861002055)
+
+        print "Favorites:"
+        for f in api.favorites():
+            print "%s %s" % (f["user"]["screen_name"], f["text"])
+        raw_input()
+
+        print "Destroy:"
+        api.favorite_destroy(6861002055)
         raw_input()

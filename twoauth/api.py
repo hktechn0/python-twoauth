@@ -39,13 +39,13 @@ class api():
             },
         "account" : {
             "verify_credentials" : twurl + "account/verify_credentials" + api_t,
-            "rate_limit"         : twurl + "account/rate_limit_status" + api_t,
-            "end_session"        : twurl + "account/end_session" + api_t,
-            "delivery_device"    : twurl + "account/update_delivery_device" + api_t,
-            "profile_colors"     : twurl + "account/update_profile_colors" + api_t,
-            "profile_image"      : twurl + "account/update_profile_image" + api_t,
-            "profile_back"       : twurl + "account/update_profile_background_image" + api_t,
-            "update_profile"     : twurl + "account/update_profile" + api_t,
+            "rate_limit"      : twurl + "account/rate_limit_status" + api_t,
+            "end_session"     : twurl + "account/end_session" + api_t,
+            "delivery_device" : twurl + "account/update_delivery_device" + api_t,
+            "profile_colors"  : twurl + "account/update_profile_colors" + api_t,
+            "profile_image"   : twurl + "account/update_profile_image" + api_t,
+            "profile_back"    : twurl + "account/update_profile_background_image" + api_t,
+            "update_profile"  : twurl + "account/update_profile" + api_t,
             },
         "lists" : {
             "create"        : apiurl + "%user%/lists" + api_t,
@@ -72,6 +72,11 @@ class api():
             "destroy" : twurl + "friendships/destroy/%user%" + api_t,
             "exists"  : twurl + "friendships/exists" + api_t,
             "show"    : twurl + "friendships/show" + api_t,
+            },
+        "favorite" : {
+            "list"    : twurl + "favorites/%user%" + api_t,
+            "create"  : twurl + "favorites/create/%id%" + api_t,
+            "destroy" : twurl + "favorites/destroy/%id%" + api_t,
             },
         }
 
@@ -119,7 +124,7 @@ class api():
             "mlist"         : "GET",
             "madd"          : "POST",
             "mremove"       : "DELETE",
-            "mshow"       : "GET",
+            "mshow"         : "GET",
             },
         "dm" : {
             "list"    : "GET",
@@ -133,7 +138,11 @@ class api():
             "exists"  : "GET",
             "show"    : "GET",
             },
-
+        "favorite" : {
+            "list"    : "GET",
+            "create"  : "POST",
+            "destroy" : "POST",
+            },
         }
 
     def __init__(self, ckey, csecret, atoken, asecret,
@@ -418,6 +427,18 @@ class api():
 
     def profile(self, **params):
         return self._api("account", "update_profile", params)
+
+    #
+    # Favorites Method
+    #
+    def favorites(self, user = "", **params):
+        return self._api("favorite", "list", params, user = user)
+
+    def favorite_create(self, _id = "", **params):
+        return self._api("favorite", "create", params, id = _id)
+
+    def favorite_destroy(self, _id = "", **params):
+        return self._api("favorite", "destroy", params, id = _id)
 
 if __name__ == "__main__":
     import sys
