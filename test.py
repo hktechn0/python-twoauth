@@ -15,8 +15,8 @@ if __name__ == "__main__":
     lists = False
     dm = False
     friendship = False
-    account = False
-    favorites = True
+    account = True
+    favorites = False
     
     print "screen_name:", api.user["screen_name"]
 
@@ -148,6 +148,14 @@ if __name__ == "__main__":
         print api.friends_show("hktechno")
         raw_input()
 
+        print "Friends ids:"
+        for id in api.friends_ids("hktechno"):
+            print int(id)
+
+        print "Followers ids:"
+        for id in api.followers_ids():
+            print int(id)
+
     if account:
         print "Account:"
 
@@ -166,9 +174,9 @@ if __name__ == "__main__":
         raw_input()
 
         print "Update profile colors:"
-        c = int(a["profile_background_color"])
+        c = eval("0x" + a["profile_background_color"])
         c = 0xffffff - c
-        c = "%x" % c
+        c = "%06x" % c
         try:
             api.profile_colors(profile_background_color = c)
         except Exception, e:

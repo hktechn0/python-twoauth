@@ -34,6 +34,9 @@ class twitterxml:
                 if a == "type" and attrs["type"] == "array":
                     self.nmode = "array"
                     break
+
+        if name == "ids":
+            self.nmode = "array"
     
     def end_element(self, name):
         # character data strip
@@ -44,9 +47,14 @@ class twitterxml:
         self.nmode = mode
 
         if cdata:
-            # string element
-            self.data.append([name, cdata])
-            self.cdata = ""
+            if mode:
+                # for ids
+                self.data.append(cdata)
+                self.cdata = ""
+            else:
+                # string element
+                self.data.append([name, cdata])
+                self.cdata = ""
         elif self.name and name == self.name[-1]:
             # empty element
             self.data.append([name, ""])
@@ -63,10 +71,14 @@ class twitterxml:
             else:
                 if isinstance(elements[0], dict):
                     # array parent
-                    self.data.append([name, elements])
+                    self.data.append((name, elements))
                 else:
                     # others
-                    self.data.append([name, dict(elements)])
+                    try:
+                        self.data.append((name, dict(elements)))
+                    except ValueError:
+                        # for ids
+                        self.data.append((name, tuple(elements)))
     
     def char_data(self, c):
         self.cdata += c

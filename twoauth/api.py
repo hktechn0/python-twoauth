@@ -72,6 +72,8 @@ class api():
             "destroy" : twurl + "friendships/destroy/%user%" + api_t,
             "exists"  : twurl + "friendships/exists" + api_t,
             "show"    : twurl + "friendships/show" + api_t,
+            "friends"   : twurl + "friends/ids" + api_t,
+            "followers" : twurl + "followers/ids" + api_t,
             },
         "favorite" : {
             "list"    : twurl + "favorites/%user%" + api_t,
@@ -137,6 +139,8 @@ class api():
             "destroy" : "POST",
             "exists"  : "GET",
             "show"    : "GET",
+            "friends"   : "GET",
+            "followers" : "GET",
             },
         "favorite" : {
             "list"    : "GET",
@@ -169,7 +173,7 @@ class api():
             try:
                 return self._api_noauth(url, params)
             except urllib2.HTTPError, e:
-                if e.code == 403:
+                if e.code in (401, 403):
                     pass
                 else:
                     raise
@@ -396,6 +400,13 @@ class api():
     #
     # Social Graph Methods
     #
+    def friends_ids(self, user = "", **params):
+        params[self._idtype(user)] = user
+        return self._api("friendship", "friends", params, noauth = True)
+    
+    def followers_ids(self, user = "", **params):
+        params[self._idtype(user)] = user
+        return self._api("friendship", "followers", params, noauth = True)
 
     #
     # Account Methods
