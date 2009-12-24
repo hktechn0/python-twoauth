@@ -17,6 +17,7 @@ if __name__ == "__main__":
     friendship = False
     account = False
     favorites = False
+    block = False
     
     print "screen_name:", api.user["screen_name"]
 
@@ -209,3 +210,9 @@ if __name__ == "__main__":
         print "Destroy:"
         api.favorite_destroy(6861002055)
         raw_input()
+
+    if block:
+        print "Blocks:"
+        print "Blocking Users:"
+        for u in api.block_list():
+            print u["screen_name"]

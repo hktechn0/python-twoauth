@@ -84,6 +84,13 @@ class api():
             "create"  : twurl + "favorites/create/%id%" + api_t,
             "destroy" : twurl + "favorites/destroy/%id%" + api_t,
             },
+        "block" : {
+            "create"   : twurl + "blocks/create" + api_t,
+            "destroy"  : twurl + "blocks/destroy" + api_t,
+            "exists"   : twurl + "blocks/exists" + api_t,
+            "blocking" : twurl + "blocks/blocking" + api_t,
+            "blockids" : twurl + "blocks/blocking/ids" + api_t,
+            },
         }
 
     method = {
@@ -154,6 +161,13 @@ class api():
             "list"    : "GET",
             "create"  : "POST",
             "destroy" : "POST",
+            },
+        "block" : {
+            "create"   : "POST",
+            "destroy"  : "POST",
+            "exists"   : "GET",
+            "blocking" : "GET",
+            "blockids" : "GET",
             },
         }
 
@@ -462,6 +476,35 @@ class api():
 
     def favorite_destroy(self, _id = "", **params):
         return self._api("favorite", "destroy", params, id = _id)
+
+    #
+    # Notification Methods
+    #
+    def notification_follow(self):
+        pass
+    def notification_leave(self):
+        pass
+
+    #
+    # Block Methods
+    #
+    def block_create(self, user, **params):
+        params[self._idtype(user)] = user
+        return self._api("block", "create", params)
+
+    def block_destroy(self, user, **params):
+        params[self._idtype(user)] = user
+        return self._api("block", "destroy", params)
+
+    def block_exists(self, user, **params):
+        params[self._idtype(user)] = user
+        return self._api("block", "destroy", params)
+
+    def block_list(self, **params):
+        return self._api("block", "blocking", params)
+
+    def block_ids(self, **params):
+        return self._api("block", "ids", params)
 
 if __name__ == "__main__":
     import sys
