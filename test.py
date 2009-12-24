@@ -9,34 +9,33 @@ if __name__ == "__main__":
     api = twoauth.api(
         sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
 
-    timeline = False
+    timeline = True
     status = False
     user = False
     lists = False
     dm = False
     friendship = False
-    account = True
+    account = False
     favorites = False
     
     print "screen_name:", api.user["screen_name"]
 
     if timeline:
         print "Timeline:"
-        tls = (api.public_timeline(),
-               api.home_timeline(),
-               api.friends_timeline(),
-               api.user_timeline(),
-               api.mentions(),
-               api.rt_by_me(),
-               api.rt_to_me(),
-               api.rt_of_me())
-        for tl in tls:
+        for tl in (api.public_timeline(),
+                   api.home_timeline(),
+                   api.friends_timeline(),
+                   api.user_timeline(),
+                   api.mentions(),
+                   api.rt_by_me(),
+                   api.rt_to_me(),
+                   api.rt_of_me()):
             print len(tl)
-            for status in tl:
+            for s in tl:
                 print "%15s: %s" % (
-                    status["user"]["screen_name"], status["text"])
+                    s["user"]["screen_name"], s["text"])
             raw_input()
-
+    
     if status:
         print "Status:"
         print api.status_show(6309158646)["text"]
@@ -73,7 +72,7 @@ if __name__ == "__main__":
             for s in tl:
                 print s["screen_name"]
             raw_input()
-
+    
     if lists:
         print "Lists:"
         print "Create:",
@@ -113,7 +112,16 @@ if __name__ == "__main__":
         for l in api.lists_subscriptions("hktechno")["lists"]:
             print "%30s %s" % (l["full_name"], l["member_count"])
         raw_input()
-            
+
+        print "Members Show:"
+        for u in api.lists_mlist("team", "twitter")["users"]:
+            print u["screen_name"]
+
+        print "Subscribers Show:"
+        for u in api.lists_slist("team", "twitter")["users"]:
+            print u["screen_name"]
+        raw_input()
+    
     if dm:
         print "Direct Message"
         print "Inbox:"

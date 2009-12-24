@@ -56,10 +56,14 @@ class api():
             "statuses"      : apiurl + "%user%/lists/%id%/statuses" + api_t,
             "memberships"   : apiurl + "%user%/lists/memberships" + api_t,
             "subscriptions" : apiurl + "%user%/lists/subscriptions" + api_t,
-            "mlist"    : apiurl + "%user%/%id%/members" + api_t,
-            "madd"     : apiurl + "%user%/%id%/members" + api_t,
-            "mremove"  : apiurl + "%user%/%id%/members" + api_t,
+            "mlist"    : apiurl + "%user%/%list_id%/members" + api_t,
+            "madd"     : apiurl + "%user%/%list_id%/members" + api_t,
+            "mremove"  : apiurl + "%user%/%list_id%/members" + api_t,
             "mshow"    : apiurl + "%user%/%list_id%/members/%id%" + api_t,
+            "slist"    : apiurl + "%user%/%list_id%/subscribers" + api_t,
+            "sadd"     : apiurl + "%user%/%list_id%/subscribers" + api_t,
+            "sremove"  : apiurl + "%user%/%list_id%/subscribers" + api_t,
+            "sshow"    : apiurl + "%user%/%list_id%/subscribers/%id%" + api_t,
             },
         "dm" : {
             "list"    : twurl + "direct_messages" + api_t,
@@ -127,6 +131,10 @@ class api():
             "madd"          : "POST",
             "mremove"       : "DELETE",
             "mshow"         : "GET",
+            "slist"         : "GET",
+            "sadd"          : "POST",
+            "sremove"       : "DELETE",
+            "sshow"         : "GET",
             },
         "dm" : {
             "list"    : "GET",
@@ -330,16 +338,16 @@ class api():
     #
     # Lists Members Methods
     #
-    def lists_mlist(self, _id, user = "", **params):
-        return self._api("lists", "mlist", params, user = user, id = _id)
+    def lists_mlist(self, list_id, user = "", **params):
+        return self._api("lists", "mlist", params, user = user, list_id = list_id)
     
-    def lists_madd(self, member, _id, user = "", **params):
+    def lists_madd(self, member, list_id, user = "", **params):
         params["id"] = member
-        return self._api("lists", "madd", params, user = user, id = _id)
+        return self._api("lists", "madd", params, user = user, list_id = list_id)
 
-    def lists_mremove(self, member, _id, user = "", **params):
+    def lists_mremove(self, member, list_id, user = "", **params):
         params["id"] = member
-        return self._api("lists", "mremove", params, user = user, id = _id)
+        return self._api("lists", "mremove", params, user = user, list_id = list_id)
     
     def lists_mshow(self, _id, list_id, user = "", **params):
         return self._api("lists", "mshow", params,
@@ -348,14 +356,18 @@ class api():
     #
     # List Subscribers Methods
     #
-    def lists_slist(self):
-        pass
-    def lists_sadd(self):
-        pass
-    def lists_sremove(self):
-        pass
-    def lists_sshow(self):
-        pass
+    def lists_slist(self, list_id, user = "", **params):
+        return self._api("lists", "slist", params, user = user, list_id = list_id)
+    
+    def lists_sadd(self, list_id, user = "", **params):
+        return self._api("lists", "sadd", params, user = user, list_id = list_id)
+    
+    def lists_sremove(self, list_id, user = "", **params):
+        return self._api("lists", "sremove", params, user = user, list_id = list_id)
+    
+    def lists_sshow(self, _id, list_id, user = "", **params):
+        return self._api("lists", "sshow", params,
+                         user = user, list_id = list_id, id = _id)
     
     #
     # Direct Message Methods
