@@ -1,0 +1,20 @@
+************************************************************
+ - python-twoauth
+ -- OAuth supported Twitter library
+
+ -- Hirotaka Kawata <info@techno-st.net>
+ -- http://www.techno-st.net/wiki/python-twoauth
+************************************************************
+
+- Licence
+-- MIT Licence
+
+- Required
+-- Python (>= 2.5)
+
+- Usage
+Comming soon...
+You should read test.py or sample/ codes.
+
+If you can read Japanese, here is small documents.
+-- http://www.techno-st.net/wiki/python-twoauth
