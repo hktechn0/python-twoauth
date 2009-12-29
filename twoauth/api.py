@@ -1,5 +1,5 @@
 import urllib, urllib2
-
+import datetime
 import oauth
 import twitterxml
 
@@ -173,17 +173,24 @@ class api():
 
     def __init__(self, ckey, csecret, atoken, asecret,
                  oauth_obj = None):
+        # Oauth init
         if oauth_obj == None:
             self.oauth = oauth.oauth(ckey, csecret, atoken, asecret)
         else:
             self.oauth = oauth_obj
-
+        
+        # Get user info
         req = self.oauth.oauth_request(
             self.url["account"]["verify_credentials"])
-        getxml = urllib2.urlopen(req).read()
-
-        user = twitterxml.xmlparse(getxml)
-        self.user = user
+        xml = urllib2.urlopen(req).read()
+        self.user = twitterxml.xmlparse(xml)
+        
+        # Get rate limit
+        limit = self.rate_limit()
+        self.ratelimit_limit = int(limit["hourly-limit"])
+        self.ratelimit_remaining = int(limit["remaining-hits"])
+        self.ratelimit_reset = datetime.datetime.fromtimestamp(
+            int(limit["reset-time-in-seconds"]))
     
     def _api(self, a, b, params = {}, noauth = False, **replace):
         url = self._urlreplace(a, b, replace)
@@ -201,7 +208,12 @@ class api():
                     raise
         
         req = self.oauth.oauth_request(url, method, params)
-        xml = urllib2.urlopen(req).read()
+        data = urllib2.urlopen(req)
+        
+        header = data.info()
+        self._set_ratelimit(header)
+        
+        xml = data.read()
         return twitterxml.xmlparse(xml)
     
     def _api_noauth(self, url, params):
@@ -221,6 +233,15 @@ class api():
         params = self._rm_noparams(params)
         res = self.oauth.oauth_http_request(url, "DELETE", params)
         return twitterxml.xmlparse(res.read())
+
+    def _set_ratelimit(self, header):
+        try:
+            self.ratelimit_limit = int(header["X-RateLimit-Limit"])
+            self.ratelimit_remaining = int(header["X-RateLimit-Remaining"])
+            self.ratelimit_reset = datetime.datetime.fromtimestamp(
+                int(header["X-RateLimit-Reset"]))
+        except KeyError:
+            pass
     
     def _rm_noparams(self, params):
         flg = True
