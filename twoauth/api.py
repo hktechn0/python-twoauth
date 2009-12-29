@@ -276,7 +276,7 @@ class api():
     #
     # Timeline Methods
     #
-    def public_timeline(self):
+    def public_timeline(self, **params):
         return self._api("statuses", "public_timeline", noauth = True)
     
     def home_timeline(self, **params):
@@ -305,20 +305,20 @@ class api():
     #
     # Status Methods
     #
-    def status_show(self, _id):
+    def status_show(self, _id, **params):
         return self._api("statuses", "show", noauth = True, id = _id)
     
     def status_update(self, status, **params):
         params["status"] = status
         return self._api("statuses", "update", params)
     
-    def status_destroy(self, _id):
+    def status_destroy(self, _id, **params):
         return self._api("statuses", "destroy", id = _id)
     
-    def status_retweet(self, _id):
+    def status_retweet(self, _id, **params):
         return self._api("statuses", "retweet", id = _id)
     
-    def status_retweets(self, _id):
+    def status_retweets(self, _id, **params):
         return self._api("statuses", "retweets", id = _id)
     
     #
@@ -413,7 +413,7 @@ class api():
     def dm_sent(self, **params):
         return self._api("dm", "sent", params)
     
-    def dm_destroy(self, _id):
+    def dm_destroy(self, _id, **params):
         return self._api("dm", "destroy", id = _id)
 
     def dm_new(self, user, text, **params):
@@ -458,14 +458,14 @@ class api():
     #
     # Account Methods
     #
-    def verify_credentials(self):
+    def verify_credentials(self, **params):
         return self._api("account", "verify_credentials")
 
-    def rate_limit(self, ip_limit = False):
+    def rate_limit(self, ip_limit = False, **params):
         # ip_limit: True: IP Limit, False: Account Limit
         return self._api("account", "rate_limit", noauth = ip_limit)
     
-    def end_session(self):
+    def end_session(self, **params):
         return self._api("account", "end_session")
 
     def delivery_device(self, device, **params):
@@ -501,9 +501,9 @@ class api():
     #
     # Notification Methods
     #
-    def notification_follow(self):
+    def notification_follow(self, **params):
         pass
-    def notification_leave(self):
+    def notification_leave(self, **params):
         pass
 
     #
