@@ -62,8 +62,7 @@ class twitterxml:
         if "type" in attrs.keys():
             if attrs["type"] == "array":
                 self.nmode = "array"
-                break
-
+        
         if name == "ids":
             self.nmode = "array"
     
