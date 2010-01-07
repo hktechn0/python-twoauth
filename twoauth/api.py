@@ -191,6 +191,11 @@ class api():
         self.ratelimit_remaining = int(limit["remaining-hits"])
         self.ratelimit_reset = datetime.datetime.fromtimestamp(
             int(limit["reset-time-in-seconds"]))
+        iplimit = self.rate_limit(ip_limit = True)
+        self.ratelimit_iplimit = int(iplimit["hourly-limit"])
+        self.ratelimit_ipremaining = int(iplimit["remaining-hits"])
+        self.ratelimit_ipreset = datetime.datetime.fromtimestamp(
+            int(iplimit["reset-time-in-seconds"]))
     
     def _api(self, a, b, params = {}, noauth = False, **replace):
         url = self._urlreplace(a, b, replace)
@@ -219,7 +224,13 @@ class api():
     def _api_noauth(self, url, params):
         # No use OAuth, GET only
         paramstr = urllib.urlencode(params)
-        xml = urllib2.urlopen("%s?%s" % (url, paramstr)).read()
+
+        data = urllib2.urlopen("%s?%s" % (url, paramstr))
+
+        header = data.info()
+        self._set_ratelimit_ip(header)
+
+        xml = data.read()
         return twitterxml.xmlparse(xml)
     
     def _api_delete(self, a, b, user = "", _id = "", params = {}):
@@ -239,6 +250,15 @@ class api():
             self.ratelimit_limit = int(header["X-RateLimit-Limit"])
             self.ratelimit_remaining = int(header["X-RateLimit-Remaining"])
             self.ratelimit_reset = datetime.datetime.fromtimestamp(
+                int(header["X-RateLimit-Reset"]))
+        except KeyError:
+            pass
+
+    def _set_ratelimit_ip(self, header):
+        try:
+            self.ratelimit_iplimit = int(header["X-RateLimit-Limit"])
+            self.ratelimit_ipremaining = int(header["X-RateLimit-Remaining"])
+            self.ratelimit_ipreset = datetime.datetime.fromtimestamp(
                 int(header["X-RateLimit-Reset"]))
         except KeyError:
             pass
