@@ -276,18 +276,19 @@ class api():
     #
     # Timeline Methods
     #
-    def public_timeline(self, **params):
-        return self._api("statuses", "public_timeline", noauth = True)
+    def public_timeline(self, auth = False, **params):
+        return self._api("statuses", "public_timeline", noauth = not auth)
     
     def home_timeline(self, **params):
         return self._api("statuses", "home_timeline", params)
     
     def friends_timeline(self, **params):
         return self._api("statuses", "friends_timeline", params)
-
-    def user_timeline(self, user = "", **params):
+    
+    def user_timeline(self, user = "", auth = False, **params):
         params[self._idtype(user)] = user
-        data = self._api("statuses", "user_timeline", params, noauth = True)
+        data = self._api("statuses", "user_timeline", params, 
+                         noauth = not auth)
         return data
     
     def mentions(self, **params):
@@ -305,8 +306,8 @@ class api():
     #
     # Status Methods
     #
-    def status_show(self, _id, **params):
-        return self._api("statuses", "show", noauth = True, id = _id)
+    def status_show(self, _id, auth = False, **params):
+        return self._api("statuses", "show", noauth = not auth, id = _id)
     
     def status_update(self, status, **params):
         params["status"] = status
@@ -324,9 +325,9 @@ class api():
     #
     # User Methods
     #
-    def user_show(self, user, **params):
+    def user_show(self, user, auth = False, **params):
         params[self._idtype(user)] = user
-        return self._api("users", "show", params, noauth = True)
+        return self._api("users", "show", params, noauth = not auth)
     
     def user_search(self, q, **params):
         params["q"] = q
@@ -360,8 +361,8 @@ class api():
         return self._api_delete("lists", "destroy", 
                                 _id = _id, params = params)
     
-    def lists_statuses(self, _id, user = "", **params):
-        return self._api("lists", "statuses", params, noauth = True,
+    def lists_statuses(self, _id, user = "", auth = False, **params):
+        return self._api("lists", "statuses", params, noauth = not auth,
                          user = user, id = _id)
     
     def lists_memberships(self, user = "", **params):
@@ -374,15 +375,18 @@ class api():
     # Lists Members Methods
     #
     def lists_mlist(self, list_id, user = "", **params):
-        return self._api("lists", "mlist", params, user = user, list_id = list_id)
+        return self._api("lists", "mlist", params, 
+                         user = user, list_id = list_id)
     
     def lists_madd(self, member, list_id, user = "", **params):
         params["id"] = member
-        return self._api("lists", "madd", params, user = user, list_id = list_id)
+        return self._api("lists", "madd", params, 
+                         user = user, list_id = list_id)
 
     def lists_mremove(self, member, list_id, user = "", **params):
         params["id"] = member
-        return self._api("lists", "mremove", params, user = user, list_id = list_id)
+        return self._api("lists", "mremove", params, 
+                         user = user, list_id = list_id)
     
     def lists_mshow(self, _id, list_id, user = "", **params):
         return self._api("lists", "mshow", params,
@@ -392,13 +396,16 @@ class api():
     # List Subscribers Methods
     #
     def lists_slist(self, list_id, user = "", **params):
-        return self._api("lists", "slist", params, user = user, list_id = list_id)
+        return self._api("lists", "slist", params, 
+                         user = user, list_id = list_id)
     
     def lists_sadd(self, list_id, user = "", **params):
-        return self._api("lists", "sadd", params, user = user, list_id = list_id)
+        return self._api("lists", "sadd", params, 
+                         user = user, list_id = list_id)
     
     def lists_sremove(self, list_id, user = "", **params):
-        return self._api("lists", "sremove", params, user = user, list_id = list_id)
+        return self._api("lists", "sremove", params, 
+                         user = user, list_id = list_id)
     
     def lists_sshow(self, _id, list_id, user = "", **params):
         return self._api("lists", "sshow", params,
@@ -430,30 +437,30 @@ class api():
     def friends_destroy(self, user, **params):
         return self._api("friendship", "destroy", params, user = user)
 
-    def friends_exists(self, user_a, user_b, **params):
+    def friends_exists(self, user_a, user_b, auth = False, **params):
         params["user_a"] = user_a
         params["user_b"] = user_b
-        return self._api("friendship", "exists", params, noauth = True)
+        return self._api("friendship", "exists", params, noauth = not auth)
     
-    def friends_show(self, target, source = "", **params):
+    def friends_show(self, target, source = "", auth = False, **params):
         tp = ("target_id", "target_screen_name")
         params[self._idtype(target, tp)] = target
         
         sp = ("source_id", "source_screen_name")
         params[self._idtype(source, sp)] = source
         
-        return self._api("friendship", "show", params, noauth = True)
+        return self._api("friendship", "show", params, noauth = not auth)
 
     #
     # Social Graph Methods
     #
-    def friends_ids(self, user = "", **params):
+    def friends_ids(self, user = "", auth = False, **params):
         params[self._idtype(user)] = user
-        return self._api("friendship", "friends", params, noauth = True)
+        return self._api("friendship", "friends", params, noauth = not auth)
     
-    def followers_ids(self, user = "", **params):
+    def followers_ids(self, user = "", auth = False, **params):
         params[self._idtype(user)] = user
-        return self._api("friendship", "followers", params, noauth = True)
+        return self._api("friendship", "followers", params, noauth = not auth)
 
     #
     # Account Methods
