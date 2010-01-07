@@ -231,8 +231,7 @@ if __name__ == "__main__":
     print "What are you doing?:",
     post = raw_input()
     
-    req = oa.oauth_request(post_url, "POST",
-                     {"status" : post})
+    req = oa.oauth_request(post_url, "POST", {"status" : post})
     
     try:
         resp = urllib2.urlopen(req)

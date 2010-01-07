@@ -28,6 +28,8 @@
 # THE SOFTWARE.
 #
 
+# Twitter REST API wrapper methods
+
 import urllib, urllib2
 import string
 import datetime
@@ -75,10 +77,8 @@ class api():
             try:
                 return self._api_noauth(url, params)
             except urllib2.HTTPError, e:
-                if e.code in (401, 403):
-                    pass
-                else:
-                    raise
+                if e.code in (401, 403): pass
+                else:                    raise
         
         req = self.oauth.oauth_request(url, method, params)
         data = urllib2.urlopen(req)

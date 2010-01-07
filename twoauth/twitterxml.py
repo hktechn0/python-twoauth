@@ -36,13 +36,13 @@ import xml.parsers.expat
 class twitterxml:
     def __init__(self, xmlstr):
         # stack
-        self.name = []
-        self.data = []
-        self.cdata = ""
+        self.name = list()
+        self.data = list()
+        self.cdata = str()
 
         # mode stack
-        self.mode = []
-        self.nmode = ""
+        self.mode = list()
+        self.nmode = str()
         
         # XML Parser
         self.p = xml.parsers.expat.ParserCreate()
@@ -55,15 +55,14 @@ class twitterxml:
         # push element name
         self.name.append(name)
         self.mode.append(self.nmode)
-        self.cdata = ""
-        self.nmode = ""
+        self.cdata = str()
+        self.nmode = str()
         
         # type="array" mode check
-        if attrs:
-            for a in attrs:
-                if a == "type" and attrs["type"] == "array":
-                    self.nmode = "array"
-                    break
+        if "type" in attrs.keys():
+            if attrs["type"] == "array":
+                self.nmode = "array"
+                break
 
         if name == "ids":
             self.nmode = "array"
@@ -80,11 +79,11 @@ class twitterxml:
             if mode:
                 # for ids
                 self.data.append(cdata)
-                self.cdata = ""
+                self.cdata = str()
             else:
                 # string element
                 self.data.append([name, cdata])
-                self.cdata = ""
+                self.cdata = str()
         elif self.name and name == self.name[-1]:
             # empty element
             self.data.append([name, ""])
