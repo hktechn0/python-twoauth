@@ -28,7 +28,8 @@
 # THE SOFTWARE.
 #
 
-twurl = "http://twitter.com/"
+twurl = "http://api.twitter.com/1/"
+#twurl = "http://twitter.com/"
 apiurl = "http://api.twitter.com/1/"
 t = ".xml"
 
