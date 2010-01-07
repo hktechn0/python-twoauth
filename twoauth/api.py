@@ -217,11 +217,15 @@ class api():
         params["q"] = q
         return self._api("users", "search", params)
     
-    def status_friends(self, user = "", **params):
+    def status_friends(self, *a, **b):
+        self.friends(*a, **b)
+    def friends(self, user = "", **params):
         params[self._idtype(user)] = user
         return self._api("statuses", "friends", params)
     
-    def status_followers(self, user = "", **params):
+    def status_followers(self, *a, **b):
+        self.friends(*a, **b)
+    def followers(self, user = "", **params):
         params[self._idtype(user)] = user
         return self._api("statuses", "followers", params)
     
