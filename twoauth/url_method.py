@@ -9,143 +9,143 @@
 
 twurl = "http://twitter.com/"
 apiurl = "http://api.twitter.com/1/"
-api_t = ".xml"
+t = ".xml"
 
 # Twitter REST API URLs
 url = {
     "statuses" : {
         "public_timeline" :
-            twurl + "statuses/public_timeline" + api_t,
+            twurl + "statuses/public_timeline" + t,
         "home_timeline" :
-            apiurl + "statuses/home_timeline" + api_t,
+            apiurl + "statuses/home_timeline" + t,
         "friends_timeline" :
-            twurl + "statuses/friends_timeline" + api_t,
+            twurl + "statuses/friends_timeline" + t,
         "user_timeline" :
-            twurl + "statuses/user_timeline" + api_t,
+            twurl + "statuses/user_timeline" + t,
         "mentions" :
-            twurl + "statuses/mentions" + api_t,
+            twurl + "statuses/mentions" + t,
         "retweeted_by_me" :
-            apiurl + "statuses/retweeted_by_me" + api_t,
+            apiurl + "statuses/retweeted_by_me" + t,
         "retweeted_to_me" :
-            apiurl + "statuses/retweeted_to_me" + api_t,
+            apiurl + "statuses/retweeted_to_me" + t,
         "retweets_of_me" :
-            apiurl + "statuses/retweets_of_me" + api_t,
+            apiurl + "statuses/retweets_of_me" + t,
         "show" :
-            twurl + "statuses/show/" + "%id%" + api_t,
+            twurl + "statuses/show/${id}" + t,
         "update" :
-            twurl + "statuses/update" + api_t,
+            twurl + "statuses/update" + t,
         "destroy" :
-            twurl + "statuses/destroy/" + "%id%" + api_t,
+            twurl + "statuses/destroy/${id}" + t,
         "retweet" :
-            apiurl + "statuses/retweet/" + "%id%" + api_t,
+            apiurl + "statuses/retweet/${id}" + t,
         "retweets" :
-            apiurl + "statuses/retweets/" + "%id%" + api_t,
+            apiurl + "statuses/retweets/${id}" + t,
         "friends" :
-            twurl + "statuses/friends" + api_t,
+            twurl + "statuses/friends" + t,
         "followers" :
-            twurl + "statuses/followers" + api_t
+            twurl + "statuses/followers" + t
         },
     "users" : {
         "show" :
-            twurl + "users/show" + api_t,
+            twurl + "users/show" + t,
         "search" :
-            apiurl + "users/search" + api_t
+            apiurl + "users/search" + t
         },
     "account" : {
         "verify_credentials" :
-            twurl + "account/verify_credentials" + api_t,
+            twurl + "account/verify_credentials" + t,
         "rate_limit" :
-            twurl + "account/rate_limit_status" + api_t,
+            twurl + "account/rate_limit_status" + t,
         "end_session" :
-            twurl + "account/end_session" + api_t,
+            twurl + "account/end_session" + t,
         "delivery_device" :
-            twurl + "account/update_delivery_device" + api_t,
+            twurl + "account/update_delivery_device" + t,
         "profile_colors" :
-            twurl + "account/update_profile_colors" + api_t,
+            twurl + "account/update_profile_colors" + t,
         "profile_image" :
-            twurl + "account/update_profile_image" + api_t,
+            twurl + "account/update_profile_image" + t,
         "profile_back" :
-            twurl + "account/update_profile_background_image" + api_t,
+            twurl + "account/update_profile_background_image" + t,
         "update_profile" :
-            twurl + "account/update_profile" + api_t,
+            twurl + "account/update_profile" + t,
         },
     "lists" : {
         "create" :
-            apiurl + "%user%/lists" + api_t,
+            apiurl + "${user}/lists" + t,
         "update" :
-            apiurl + "%user%/lists/%id%" + api_t,
+            apiurl + "${user}/lists/${id}" + t,
         "index" :
-            apiurl + "%user%/lists" + api_t,
+            apiurl + "${user}/lists" + t,
         "show" :
-            apiurl + "%user%/lists/%id%" + api_t,
+            apiurl + "${user}/lists/${id}" + t,
         "destroy" :
-            apiurl + "%user%/lists/%id%" + api_t,
+            apiurl + "${user}/lists/${id}" + t,
         "statuses" :
-            apiurl + "%user%/lists/%id%/statuses" + api_t,
+            apiurl + "${user}/lists/${list_id}/statuses" + t,
         "memberships" :
-            apiurl + "%user%/lists/memberships" + api_t,
+            apiurl + "${user}/lists/memberships" + t,
         "subscriptions" :
-            apiurl + "%user%/lists/subscriptions" + api_t,
+            apiurl + "${user}/lists/subscriptions" + t,
         "mlist" :
-            apiurl + "%user%/%list_id%/members" + api_t,
+            apiurl + "${user}/${list_id}/members" + t,
         "madd" :
-            apiurl + "%user%/%list_id%/members" + api_t,
+            apiurl + "${user}/${list_id}/members" + t,
         "mremove" :
-            apiurl + "%user%/%list_id%/members" + api_t,
+            apiurl + "${user}/${list_id}/members" + t,
         "mshow" :
-            apiurl + "%user%/%list_id%/members/%id%" + api_t,
+            apiurl + "${user}/${list_id}/members/${id}" + t,
         "slist" :
-            apiurl + "%user%/%list_id%/subscribers" + api_t,
+            apiurl + "${user}/${list_id}/subscribers" + t,
         "sadd" :
-            apiurl + "%user%/%list_id%/subscribers" + api_t,
+            apiurl + "${user}/${list_id}/subscribers" + t,
         "sremove" :
-            apiurl + "%user%/%list_id%/subscribers" + api_t,
+            apiurl + "${user}/${list_id}/subscribers" + t,
         "sshow" :
-            apiurl + "%user%/%list_id%/subscribers/%id%" + api_t,
+            apiurl + "${user}/${list_id}/subscribers/${id}" + t,
         },
     "dm" : {
         "list" :
-            twurl + "direct_messages" + api_t,
+            twurl + "direct_messages" + t,
         "sent" :
-            twurl + "direct_messages/sent" + api_t,
+            twurl + "direct_messages/sent" + t,
         "new" :
-            twurl + "direct_messages/new" + api_t,
+            twurl + "direct_messages/new" + t,
         "destroy" :
-            twurl + "direct_messages/destroy/" + "%id%" + api_t,
+            twurl + "direct_messages/destroy/${id}" + t,
         },
     "friendship" : {
         "create" :
-            twurl + "friendships/create/%user%" + api_t,
+            twurl + "friendships/create/${user}" + t,
         "destroy" :
-            twurl + "friendships/destroy/%user%" + api_t,
+            twurl + "friendships/destroy/${user}" + t,
         "exists" :
-            twurl + "friendships/exists" + api_t,
+            twurl + "friendships/exists" + t,
         "show" :
-            twurl + "friendships/show" + api_t,
+            twurl + "friendships/show" + t,
         "friends" :
-            twurl + "friends/ids" + api_t,
+            twurl + "friends/ids" + t,
         "followers" :
-            twurl + "followers/ids" + api_t,
+            twurl + "followers/ids" + t,
         },
     "favorite" : {
         "list" :
-            twurl + "favorites/%user%" + api_t,
+            twurl + "favorites/${user}" + t,
         "create" :
-            twurl + "favorites/create/%id%" + api_t,
+            twurl + "favorites/create/${id}" + t,
         "destroy" :
-            twurl + "favorites/destroy/%id%" + api_t,
+            twurl + "favorites/destroy/${id}" + t,
         },
     "block" : {
         "create" :
-            twurl + "blocks/create" + api_t,
+            twurl + "blocks/create" + t,
         "destroy"  :
-            twurl + "blocks/destroy" + api_t,
+            twurl + "blocks/destroy" + t,
         "exists" :
-            twurl + "blocks/exists" + api_t,
+            twurl + "blocks/exists" + t,
         "blocking" :
-            twurl + "blocks/blocking" + api_t,
+            twurl + "blocks/blocking" + t,
         "blockids" :
-            twurl + "blocks/blocking/ids" + api_t,
+            twurl + "blocks/blocking/ids" + t,
         },
     }
 

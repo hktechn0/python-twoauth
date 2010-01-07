@@ -1,4 +1,5 @@
 import urllib, urllib2
+import string
 import datetime
 import oauth
 import twitterxml
@@ -12,7 +13,7 @@ import twitterxml
 
 class api():
     # url, method
-    from url_method import *
+    from url_method import url, method
     
     def __init__(self, ckey, csecret, atoken, asecret,
                  oauth_obj = None):
@@ -34,6 +35,7 @@ class api():
         self.ratelimit_remaining = int(limit["remaining-hits"])
         self.ratelimit_reset = datetime.datetime.fromtimestamp(
             int(limit["reset-time-in-seconds"]))
+
         iplimit = self.rate_limit(ip_limit = True)
         self.ratelimit_iplimit = int(iplimit["hourly-limit"])
         self.ratelimit_ipremaining = int(iplimit["remaining-hits"])
@@ -76,18 +78,13 @@ class api():
         xml = data.read()
         return twitterxml.xmlparse(xml)
     
-    def _api_delete(self, a, b, user = "", _id = "", params = {}):
-        if not user:
-            user = self.user["screen_name"]
-        
-        url = self.url[a][b]
-        url = url.replace("%user%", str(user))
-        url = url.replace("%id%", str(_id))
-        
+    def _api_delete(self, a, b, params = {}, **replace):
+        url = self._urlreplace(a, b, replace)
+
         params = self._rm_noparams(params)
         res = self.oauth.oauth_http_request(url, "DELETE", params)
         return twitterxml.xmlparse(res.read())
-
+    
     def _set_ratelimit(self, header):
         try:
             self.ratelimit_limit = int(header["X-RateLimit-Limit"])
@@ -127,14 +124,15 @@ class api():
 
     def _urlreplace(self, a, b, replace):
         url = self.url[a][b]
-
+        
+        # if user not in replace list, add auth user
         if "user" not in replace or not replace["user"]:
             replace["user"] = self.user["screen_name"]
-
-        for d in replace:
-            url = url.replace("%%%s%%" % d, str(replace[d]))
-
-        return url
+        
+        tmpl = string.Template(url)
+        rurl = tmpl.substitute(replace)
+        
+        return rurl
     
     #
     # Timeline Methods
@@ -222,11 +220,11 @@ class api():
     
     def lists_destroy(self, _id, **params):
         return self._api_delete("lists", "destroy", 
-                                _id = _id, params = params)
+                                id = _id, params = params)
     
-    def lists_statuses(self, _id, user = "", auth = False, **params):
+    def lists_statuses(self, list_id, user = "", auth = False, **params):
         return self._api("lists", "statuses", params, noauth = not auth,
-                         user = user, id = _id)
+                         user = user, list_id = list_id)
     
     def lists_memberships(self, user = "", **params):
         return self._api("lists", "memberships", params, user = user)
