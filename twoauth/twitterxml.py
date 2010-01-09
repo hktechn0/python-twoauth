@@ -76,7 +76,8 @@ class twitterxml:
         self.nmode = mode
 
         if d:
-            d = int(d) if d.isdigit() else d
+            d = int(d) \
+                if d.isdigit() and name != "screen_name" else d
             if mode:
                 # for ids
                 self.data.append(d)
