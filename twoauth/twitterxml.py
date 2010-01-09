@@ -68,21 +68,21 @@ class twitterxml:
     
     def end_element(self, name):
         # character data strip
-        cdata = self.cdata.strip(" \n")
+        d = self.cdata.strip(" \n")
+        self.cdata = str()
 
         # pop mode and set next mode
         mode = self.mode.pop()
         self.nmode = mode
 
-        if cdata:
+        if d:
+            d = int(d) if d.isdigit() else d
             if mode:
                 # for ids
-                self.data.append(cdata)
-                self.cdata = str()
+                self.data.append(d)
             else:
                 # string element
-                self.data.append([name, cdata])
-                self.cdata = str()
+                self.data.append([name, d])
         elif self.name and name == self.name[-1]:
             # empty element
             self.data.append([name, ""])
@@ -90,9 +90,9 @@ class twitterxml:
             elements = []
             while self.name.pop() != name:
                 elements.append(self.data.pop())
-
+            
             self.name.append(name)
-
+            
             if mode:
                 # array element
                 self.data.append(dict(elements))
