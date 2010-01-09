@@ -137,8 +137,8 @@ class api():
                     break
         return params
 
-    def _idtype(self, uid, ret = ("user_id", "screen_name")):
-        if str(uid).isdigit():
+    def _idtype(self, uid, ret = ("user_id", "screen_name"), sn = False):
+        if str(uid).isdigit() and not sn:
             # numeric id
             return ret[0]
         else:
@@ -169,8 +169,8 @@ class api():
     def friends_timeline(self, **params):
         return self._api("statuses", "friends_timeline", params)
     
-    def user_timeline(self, user = "", auth = False, **params):
-        params[self._idtype(user)] = user
+    def user_timeline(self, user = "", sn = False, auth = False, **params):
+        params[self._idtype(user, sn = sn)] = user
         data = self._api("statuses", "user_timeline", params, 
                          noauth = not auth)
         return data
@@ -209,8 +209,8 @@ class api():
     #
     # User Methods
     #
-    def user_show(self, user, auth = False, **params):
-        params[self._idtype(user)] = user
+    def user_show(self, user, sn = False, auth = False, **params):
+        params[self._idtype(user, sn = sn)] = user
         return self._api("users", "show", params, noauth = not auth)
     
     def user_search(self, q, **params):
@@ -219,14 +219,14 @@ class api():
     
     def status_friends(self, *a, **b):
         self.friends(*a, **b)
-    def friends(self, user = "", **params):
-        params[self._idtype(user)] = user
+    def friends(self, user = "", sn = False, **params):
+        params[self._idtype(user, sn = sn)] = user
         return self._api("statuses", "friends", params)
     
     def status_followers(self, *a, **b):
         self.friends(*a, **b)
-    def followers(self, user = "", **params):
-        params[self._idtype(user)] = user
+    def followers(self, user = "", sn = False, **params):
+        params[self._idtype(user, sn = sn)] = user
         return self._api("statuses", "followers", params)
     
     #
@@ -330,24 +330,24 @@ class api():
         params["user_b"] = user_b
         return self._api("friendship", "exists", params, noauth = not auth)
     
-    def friends_show(self, target, source = "", auth = False, **params):
+    def friends_show(self, target, source = "", sn = False, auth = False, **params):
         tp = ("target_id", "target_screen_name")
-        params[self._idtype(target, tp)] = target
+        params[self._idtype(target, tp, sn = sn)] = target
         
         sp = ("source_id", "source_screen_name")
-        params[self._idtype(source, sp)] = source
+        params[self._idtype(source, sp, sn = sn)] = source
         
         return self._api("friendship", "show", params, noauth = not auth)
 
     #
     # Social Graph Methods
     #
-    def friends_ids(self, user = "", auth = False, **params):
-        params[self._idtype(user)] = user
+    def friends_ids(self, user = "", sn = False, auth = False, **params):
+        params[self._idtype(user, sn = sn)] = user
         return self._api("friendship", "friends", params, noauth = not auth)
     
-    def followers_ids(self, user = "", auth = False, **params):
-        params[self._idtype(user)] = user
+    def followers_ids(self, user = "", sn = False, auth = False, **params):
+        params[self._idtype(user, sn = sn)] = user
         return self._api("friendship", "followers", params, noauth = not auth)
 
     #
@@ -404,16 +404,16 @@ class api():
     #
     # Block Methods
     #
-    def block_create(self, user, **params):
-        params[self._idtype(user)] = user
+    def block_create(self, user, sn = False, **params):
+        params[self._idtype(user, sn = sn)] = user
         return self._api("block", "create", params)
 
-    def block_destroy(self, user, **params):
-        params[self._idtype(user)] = user
+    def block_destroy(self, user, sn = False, **params):
+        params[self._idtype(user, sn = sn)] = user
         return self._api("block", "destroy", params)
 
-    def block_exists(self, user, **params):
-        params[self._idtype(user)] = user
+    def block_exists(self, user, sn = False, **params):
+        params[self._idtype(user, sn = sn)] = user
         return self._api("block", "destroy", params)
 
     def block_list(self, **params):
