@@ -78,8 +78,8 @@ class twitterxml:
         self.nmode = mode
 
         if d:
-            d = int(d) \
-                if d.isdigit() and name[-2:] == "id" else d
+            #d = int(d) \
+            #    if d.isdigit() and name[-2:] == "id" else d
             if mode:
                 # for ids
                 self.data.append(d)
@@ -99,6 +99,8 @@ class twitterxml:
             if mode:
                 if name == "status":
                     self.data.append(twstatus(elements))
+                elif name == "user":
+                    self.data.append(twuser(elements))
                 else:
                     # array element
                     self.data.append(dict(elements))

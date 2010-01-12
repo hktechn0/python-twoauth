@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 #
 #
-# python-twoauth [status.py]
+# python-twoauth [user.py]
 # - Hirotaka Kawata <info@techno-st.net>
 # - http://www.techno-st.net/wiki/python-twoauth
 #
@@ -32,29 +32,31 @@ import UserDict
 import time, datetime
 import locale
 
-from common import twittertime, twittersource
-from user import *
+from common import twittertime
+from status import *
 
-class twstatus(UserDict.UserDict):
+class twuser(UserDict.UserDict):
     def __init__(self, d):
-        status = dict(d)
-        self.data = status
+        user = dict(d)
+        self.data = user
         
-        self.created_at = twittertime(status["created_at"])
+        for i in ("id", 
+                  "followers_count", "friends_count", 
+                  "favourites_count", 
+                  "utc_offset", "statuses_count"):
+            setattr(self, i, int(user[i]) \
+                        if user[i] != "" else None)
         
-        for i in ("id", "in_reply_to_status_id",
-                  "in_reply_to_user_id"):
-            setattr(self, i, int(status[i]) \
-                        if status[i] != "" else None)
+        for i in ("protected", "following", "verified"):
+            setattr(self, i,
+                    True if user[i] == "true" else False)
         
-        for i in ("text", "source", "in_reply_to_screen_name"):
-            setattr(self, i, unicode(status[i]) \
-                        if status[i] != "" else None)
-        
-        self.source_name = twittersource(self.source)
-        
-        for i in ("favorited", "truncated"):
-            True if status[i] == "true" else False
+        for i in ("name", "screen_name", "location",
+                  "description", "profile_image_url",
+                  "url", "time_zone"):
+            setattr(self, i, unicode(user[i]))
 
-        if "user" in status.keys():
-            self.user = twuser(status["user"])
+        self.created_at = twittertime(user["created_at"])
+
+        if "status" in user.keys():
+            self.status = twstatus(user["status"])

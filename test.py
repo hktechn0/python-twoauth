@@ -33,8 +33,10 @@ if __name__ == "__main__":
                    api.rt_of_me()):
             print len(tl)
             for s in tl:
-                print "[%d] %15s: %s" % (
-                    s["id"], s["user"]["screen_name"], s["text"])
+                #print "[%d] %15s: %s" % (
+                #    s["id"], s["user"]["screen_name"], s["text"])
+                print "%s\n%s" % (
+                    s.user.screen_name, s.text)
             raw_input()
     
     if status:

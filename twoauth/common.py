@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 #
 #
-# python-twoauth [status.py]
+# python-twoauth [common.py]
 # - Hirotaka Kawata <info@techno-st.net>
 # - http://www.techno-st.net/wiki/python-twoauth
 #
@@ -32,29 +32,25 @@ import UserDict
 import time, datetime
 import locale
 
-from common import twittertime, twittersource
-from user import *
+def twittertime(timestr):
+    # Sample
+    # Wed Nov 18 18:54:12 +0000 2009
+    format = "%m %d %H:%M:%S +0000 %Y"
+    m = {
+        'Jan' : 1, 'Feb' : 2, 'Mar' : 3, 
+        'Apr' : 4, 'May' : 5, 'Jun' : 6,
+        'Jul' : 7, 'Aug' : 8, 'Sep' : 9, 
+        'Oct' : 10, 'Nov' : 11, 'Dec' : 12
+        }
+    
+    t = "%02d %s" % (m[timestr[4:7]], timestr[8:])
+    dt = datetime.datetime.strptime(t, format)
+    offset = time.altzone if time.daylight else time.timezone
+    dt -= datetime.timedelta(seconds = offset)
+    return dt
 
-class twstatus(UserDict.UserDict):
-    def __init__(self, d):
-        status = dict(d)
-        self.data = status
-        
-        self.created_at = twittertime(status["created_at"])
-        
-        for i in ("id", "in_reply_to_status_id",
-                  "in_reply_to_user_id"):
-            setattr(self, i, int(status[i]) \
-                        if status[i] != "" else None)
-        
-        for i in ("text", "source", "in_reply_to_screen_name"):
-            setattr(self, i, unicode(status[i]) \
-                        if status[i] != "" else None)
-        
-        self.source_name = twittersource(self.source)
-        
-        for i in ("favorited", "truncated"):
-            True if status[i] == "true" else False
-
-        if "user" in status.keys():
-            self.user = twuser(status["user"])
+def twittersource(source):
+    if source == "web":
+        return u"web"
+    else:
+        return unicode(source[source.index(">") + 1:-4])
