@@ -79,7 +79,7 @@ class twitterxml:
 
         if d:
             d = int(d) \
-                if d.isdigit() and name != "screen_name" else d
+                if d.isdigit() and name[-2:] == "id" else d
             if mode:
                 # for ids
                 self.data.append(d)
