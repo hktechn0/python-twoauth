@@ -40,7 +40,7 @@ class twitterxml:
         # stack
         self.name = list()
         self.data = list()
-        self.cdata = str()
+        self.cdata = unicode()
 
         # mode stack
         self.mode = list()
@@ -57,7 +57,7 @@ class twitterxml:
         # push element name
         self.name.append(name)
         self.mode.append(self.nmode)
-        self.cdata = str()
+        self.cdata = unicode()
         self.nmode = str()
         
         # type="array" mode check
@@ -71,12 +71,12 @@ class twitterxml:
     def end_element(self, name):
         # character data strip
         d = self.cdata.strip(" \n")
-        self.cdata = str()
+        self.cdata = unicode()
 
         # pop mode and set next mode
         mode = self.mode.pop()
         self.nmode = mode
-
+        
         if d:
             #d = int(d) \
             #    if d.isdigit() and name[-2:] == "id" else d

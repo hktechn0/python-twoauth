@@ -71,6 +71,7 @@ class api():
         url = self._urlreplace(a, b, replace)
         method = self.method[a][b]
         params = self._rm_noparams(params)
+        params = self._convert_str_params(params)
         
         if noauth:
             # try no auth request
@@ -103,8 +104,10 @@ class api():
     
     def _api_delete(self, a, b, params = {}, **replace):
         url = self._urlreplace(a, b, replace)
-
+        
         params = self._rm_noparams(params)
+        params = self._convert_str_params(params)
+        
         res = self.oauth.oauth_http_request(url, "DELETE", params)
         return twitterxml.xmlparse(res.read())
     
@@ -137,6 +140,13 @@ class api():
                     break
         return params
 
+    def _convert_str_params(self, params):
+        for i in params:
+            if isinstance(params[i], unicode):
+                params[i] = str(params[i].encode("utf-8"))
+
+        return params
+    
     def _idtype(self, uid, ret = ("user_id", "screen_name"), sn = False):
         if str(uid).isdigit() and not sn:
             # numeric id

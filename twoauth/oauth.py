@@ -127,7 +127,7 @@ class oauth():
                 enc_params[self._oquote(p)] = self._oquote(add_params[p])
         else:
             api_params = ""
-
+        
         if method == "GET":
             if add_params:
                 req = urllib2.Request("%s?%s" % (url, api_params))
