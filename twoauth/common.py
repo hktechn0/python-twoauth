@@ -53,4 +53,8 @@ def twittersource(source):
     if source == "web":
         return u"web"
     else:
-        return unicode(source[source.index(">") + 1:-4])
+        i = source.find(">")
+        if i != -1:
+            return unicode(source[i + 1:-4])
+        else:
+            return unicode(source)
