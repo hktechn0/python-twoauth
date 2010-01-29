@@ -34,6 +34,7 @@ import urllib2
 import xml.parsers.expat
 import UserDict
 from status import twstatus
+from user import twuser
 
 class twitterxml:
     def __init__(self, xmlstr):
@@ -105,16 +106,20 @@ class twitterxml:
                     # array element
                     self.data.append(dict(elements))
             else:
-                if isinstance(elements[0], (dict, twstatus)):
+                if isinstance(elements[0], (dict, twstatus, twuser)):
                     # array parent
                     self.data.append((name, elements))
                 else:
                     # others
-                    try:
-                        self.data.append((name, dict(elements)))
-                    except ValueError:
+                    if name == "status":
+                        self.data.append((name, twstatus(elements)))
+                    elif name == "user":
+                        self.data.append((name, twuser(elements)))
+                    elif name == "ids":
                         # for ids
                         self.data.append((name, tuple(elements)))
+                    else:
+                        self.data.append((name, dict(elements)))
     
     def char_data(self, c):
         self.cdata += c

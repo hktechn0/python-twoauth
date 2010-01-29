@@ -29,11 +29,9 @@
 #
 
 import UserDict
-import time, datetime
-import locale
 
 from common import twittertime
-from status import *
+import status
 
 class twuser(UserDict.UserDict):
     def __init__(self, d):
@@ -59,4 +57,4 @@ class twuser(UserDict.UserDict):
         self.created_at = twittertime(user["created_at"])
 
         if "status" in user.keys():
-            self.status = twstatus(user["status"])
+            self.status = status.twstatus(user["status"])
