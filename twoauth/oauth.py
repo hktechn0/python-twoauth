@@ -32,6 +32,7 @@
 
 import time
 import random
+import string
 import urllib, urllib2
 import httplib
 import urlparse
@@ -55,6 +56,8 @@ class oauth():
         # Access Key, Secret
         self.atoken = atoken
         self.asecret = asecret
+
+        random.seed()
     
     # Get Request Token
     def request_token(self):
@@ -164,6 +167,11 @@ class oauth():
         
         return con.getresponse()
     
+    def _rand_str(self, n):
+        seq = string.ascii_letters + string.digits
+        return ''.join(random.choice(seq) for i in xrange(n))
+        
+    
     def _init_params(self, token = None):
         if token == None:
             token = self.atoken
@@ -172,7 +180,7 @@ class oauth():
             "oauth_consumer_key": self.ckey,
             "oauth_signature_method": "HMAC-SHA1",
             "oauth_timestamp": str(int(time.time())),
-            "oauth_nonce": str(random.getrandbits(64)),
+            "oauth_nonce": self._rand_str(20),
             "oauth_version": "1.0",
             "oauth_token" : token
             }
