@@ -30,6 +30,7 @@
 
 # Twitter REST API wrapper methods
 
+import sys
 import urllib, urllib2
 import string
 import datetime
@@ -147,8 +148,8 @@ class api():
 
         return params
     
-    def _idtype(self, uid, ret = ("user_id", "screen_name"), sn = False):
-        if str(uid).isdigit() and not sn:
+    def _idtype(self, uid, ret = ("user_id", "screen_name"), is_screen_name = False):
+        if str(uid).isdigit() and not is_screen_name:
             # numeric id
             return ret[0]
         else:
@@ -179,64 +180,89 @@ class api():
     def friends_timeline(self, **params):
         return self._api("statuses", "friends_timeline", params)
     
-    def user_timeline(self, user = "", sn = False, auth = False, **params):
-        params[self._idtype(user, sn = sn)] = user
-        data = self._api("statuses", "user_timeline", params, 
-                         noauth = not auth)
+    def user_timeline(self, user = "", is_screen_name = False, auth = False, **params):
+        params[self._idtype(user, is_screen_name = is_screen_name)] = user
+        data = self._api("statuses", "user_timeline", params, noauth = not auth)
         return data
     
     def mentions(self, **params):
         return self._api("statuses", "mentions", params)
     
     def rt_by_me(self, **params):
+        print >>sys.stderr, "[warning] Deprecated method: rt_by_me => retweeted_by_me"
+        self.retweeted_by_me(**params)
+    def retweeted_by_me(self, **params):
         return self._api("statuses", "retweeted_by_me", params)
     
     def rt_to_me(self, **params):
+        print >>sys.stderr, "[warning] Deprecated method: rt_to_me => retweeted_to_me"
+        self.retweeted_to_me(**params)
+    def retweeted_to_me(self, **params):
         return self._api("statuses", "retweeted_to_me", params)
     
     def rt_of_me(self, **params):
+        print >>sys.stderr, "[warning] Deprecated method: rt_of_me => retweets_of_me"
+        self.retweets_of_me(**params)
+    def retweets_of_me(self, **params):
         return self._api("statuses", "retweets_of_me", params)
     
     #
     # Status Methods
     #
     def status_show(self, _id, auth = False, **params):
-        return self._api("statuses", "show", noauth = not auth, id = _id)
+        return self._api("statuses", "show", noauth = not auth, id = long(_id))
     
     def status_update(self, status, **params):
         params["status"] = status
         return self._api("statuses", "update", params)
     
     def status_destroy(self, _id, **params):
-        return self._api("statuses", "destroy", id = _id)
+        return self._api("statuses", "destroy", params, id = long(_id))
     
     def status_retweet(self, _id, **params):
-        return self._api("statuses", "retweet", id = _id)
+        return self._api("statuses", "retweet", params, id = long(_id))
     
     def status_retweets(self, _id, **params):
-        return self._api("statuses", "retweets", id = _id)
+        return self._api("statuses", "retweets", params, id = long(_id))
+
+    def status_retweeted_by(self, _id, **params):
+        return self._api("statuses", "retweeted_by", params, id = long(_id))
+
+    def status_retweeted_by_ids(self, _id, **params):
+        return self._api("statuses", "retweeted_by_ids", params, id = long(_id))
     
     #
     # User Methods
     #
-    def user_show(self, user, sn = False, auth = False, **params):
-        params[self._idtype(user, sn = sn)] = user
+    def user_show(self, user, is_screen_name = False, auth = False, **params):
+        params[self._idtype(user, is_screen_name = is_screen_name)] = user
         return self._api("users", "show", params, noauth = not auth)
+
+    def user_lookup(self, user_id = [], screen_name = [], **params):
+        params["user_id"] = ",".join(user_id)
+        params["screen_name"] = ",".join(user_id)
+        return self._api("users", "lookup", params)
     
     def user_search(self, q, **params):
         params["q"] = q
         return self._api("users", "search", params)
     
+    def users_suggestions(self, **params):
+        return self._api("users", "suggestions", params)
+
+    def users_suggestions_category(self, category, **params):
+        return self._api("users", "suggestions_cat", params, slug = category)
+
     def status_friends(self, *a, **b):
         self.friends(*a, **b)
-    def friends(self, user = "", sn = False, **params):
-        params[self._idtype(user, sn = sn)] = user
+    def friends(self, user = "", is_screen_name = False, **params):
+        params[self._idtype(user, is_screen_name = is_screen_name)] = user
         return self._api("statuses", "friends", params)
     
     def status_followers(self, *a, **b):
         self.friends(*a, **b)
-    def followers(self, user = "", sn = False, **params):
-        params[self._idtype(user, sn = sn)] = user
+    def followers(self, user = "", is_screen_name = False, **params):
+        params[self._idtype(user, is_screen_name = is_screen_name)] = user
         return self._api("statuses", "followers", params)
     
     #
@@ -336,28 +362,35 @@ class api():
         return self._api("friendship", "destroy", params, user = user)
 
     def friends_exists(self, user_a, user_b, auth = False, **params):
+        print >>sys.stderr, "[warning] Hey there: Why not try the friendships/show method?"
         params["user_a"] = user_a
         params["user_b"] = user_b
         return self._api("friendship", "exists", params, noauth = not auth)
     
-    def friends_show(self, target, source = "", sn = False, auth = False, **params):
+    def friends_show(self, target, source = "", is_screen_name = False, auth = False, **params):
         tp = ("target_id", "target_screen_name")
-        params[self._idtype(target, tp, sn = sn)] = target
+        params[self._idtype(target, tp, is_screen_name = is_screen_name)] = target
         
         sp = ("source_id", "source_screen_name")
-        params[self._idtype(source, sp, sn = sn)] = source
+        params[self._idtype(source, sp, is_screen_name = is_screen_name)] = source
         
         return self._api("friendship", "show", params, noauth = not auth)
 
+    def friends_incoming(self, **params):
+        return self._api("friendship", "incoming", params)
+
+    def friends_outgoing(self, **params):
+        return self._api("friendship", "outgoing", params)
+    
     #
     # Social Graph Methods
     #
-    def friends_ids(self, user = "", sn = False, auth = False, **params):
-        params[self._idtype(user, sn = sn)] = user
+    def friends_ids(self, user = "", is_screen_name = False, auth = False, **params):
+        params[self._idtype(user, is_screen_name = is_screen_name)] = user
         return self._api("friendship", "friends", params, noauth = not auth)
     
-    def followers_ids(self, user = "", sn = False, auth = False, **params):
-        params[self._idtype(user, sn = sn)] = user
+    def followers_ids(self, user = "", is_screen_name = False, auth = False, **params):
+        params[self._idtype(user, is_screen_name = is_screen_name)] = user
         return self._api("friendship", "followers", params, noauth = not auth)
 
     #
@@ -390,7 +423,7 @@ class api():
 
     def profile(self, **params):
         return self._api("account", "update_profile", params)
-
+    
     #
     # Favorites Method
     #
@@ -414,16 +447,16 @@ class api():
     #
     # Block Methods
     #
-    def block_create(self, user, sn = False, **params):
-        params[self._idtype(user, sn = sn)] = user
+    def block_create(self, user, is_screen_name = False, **params):
+        params[self._idtype(user, is_screen_name = is_screen_name)] = user
         return self._api("block", "create", params)
 
-    def block_destroy(self, user, sn = False, **params):
-        params[self._idtype(user, sn = sn)] = user
+    def block_destroy(self, user, is_screen_name =  False, **params):
+        params[self._idtype(user, is_screen_name = is_screen_name)] = user
         return self._api("block", "destroy", params)
 
-    def block_exists(self, user, sn = False, **params):
-        params[self._idtype(user, sn = sn)] = user
+    def block_exists(self, user, is_screen_name = False, **params):
+        params[self._idtype(user, is_screen_name = is_screen_name)] = user
         return self._api("block", "destroy", params)
 
     def block_list(self, **params):
@@ -431,6 +464,24 @@ class api():
 
     def block_ids(self, **params):
         return self._api("block", "ids", params)
+
+    def report_spam(self, user, is_screen_name = False, **params):
+        params[self._idtype(user, is_screen_name = is_screen_name)] = user
+        return self._api("block", "report_spam", params)
+
+    #
+    # Saved Searches Methods
+    #
+    def saved_searches(self): pass
+    def saved_searches_show(self): pass
+    def saved_searches_create(self): pass
+    def saved_searches_destroy(self): pass
+    
+    #
+    # Local Trends Methods
+    #
+    def trends_available(self): pass
+    def trends_location(self): pass
 
 if __name__ == "__main__":
     import sys

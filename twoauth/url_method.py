@@ -62,16 +62,26 @@ url = {
             apiurl + "statuses/retweet/${id}" + t,
         "retweets" :
             apiurl + "statuses/retweets/${id}" + t,
+        "retweeted_by" :
+            apiurl + "statuses/${id}/retweeted_by" + t,
+        "retweeted_by_ids" :
+            apiurl + "statuses/${id}/retweeted_by/ids" + t,
         "friends" :
             twurl + "statuses/friends" + t,
         "followers" :
-            twurl + "statuses/followers" + t
+            twurl + "statuses/followers" + t,
         },
     "users" : {
         "show" :
             twurl + "users/show" + t,
+        "lookup" :
+            twurl + "users/lookup" + t,
         "search" :
-            apiurl + "users/search" + t
+            apiurl + "users/search" + t,
+        "suggestions" :
+            apiurl + "users/suggestions" + t,
+        "suggestions_cat" :
+            apiurl + "users/suggestions/${slug}" + t,
         },
     "account" : {
         "verify_credentials" :
@@ -148,6 +158,10 @@ url = {
             twurl + "friends/ids" + t,
         "followers" :
             twurl + "followers/ids" + t,
+        "incoming" :
+            apiurl + "friendships/incoming" + t,
+        "outgoing" :
+            apiurl + "friendships/outgoing" + t,
         },
     "favorite" : {
         "list" :
@@ -168,6 +182,8 @@ url = {
             twurl + "blocks/blocking" + t,
         "blockids" :
             twurl + "blocks/blocking/ids" + t,
+        "report_spam" :
+            apiurl + "report_spam" + t,
         },
     }
 
@@ -187,12 +203,17 @@ method = {
         "destroy"          : "POST",
         "retweet"          : "POST",
         "retweets"         : "GET",
+        "retweeted_by"     : "GET",
+        "retweeted_by_ids" : "GET",
         "friends"          : "GET",
         "followers"        : "GET"
         },
     "users" : {
         "show"   : "GET",
-        "search" : "GET"
+        "search" : "GET",
+        "lookup" : "GET",
+        "suggestions"     : "GET",
+        "suggestions_cat" : "GET",
         },
     "account" : {
         "verify_credentials" : "GET",
@@ -235,6 +256,8 @@ method = {
         "show"    : "GET",
         "friends"   : "GET",
         "followers" : "GET",
+        "incoming" : "GET",
+        "outgoing" : "GET",
         },
     "favorite" : {
         "list"    : "GET",
@@ -247,5 +270,6 @@ method = {
         "exists"   : "GET",
         "blocking" : "GET",
         "blockids" : "GET",
+        "report_spam" : "POST",
         },
     }
