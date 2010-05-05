@@ -42,13 +42,21 @@ class api():
     from url_method import url, method
     
     def __init__(self, ckey, csecret, atoken, asecret,
-                 oauth_obj = None):
+                 screen_name = "", oauth_obj = None):
         # Oauth init
         if oauth_obj == None:
             self.oauth = oauth.oauth(ckey, csecret, atoken, asecret)
         else:
             self.oauth = oauth_obj
-        
+
+        if screen_name:
+            self.user = { "user" : screen_name }
+        else:
+            self.user = dict()
+    
+    # Option initialization method
+    # Only for backward compatibility...    
+    def initialize(self):
         # Get user info
         req = self.oauth.oauth_request(
             self.url["account"]["verify_credentials"])
@@ -148,7 +156,8 @@ class api():
 
         return params
     
-    def _idtype(self, uid, ret = ("user_id", "screen_name"), is_screen_name = False):
+    def _idtype(self, uid, ret = ("user_id", "screen_name"), 
+                is_screen_name = False):
         if str(uid).isdigit() and not is_screen_name:
             # numeric id
             return ret[0]
@@ -180,7 +189,8 @@ class api():
     def friends_timeline(self, **params):
         return self._api("statuses", "friends_timeline", params)
     
-    def user_timeline(self, user = "", is_screen_name = False, auth = False, **params):
+    def user_timeline(self, user = "", is_screen_name = False,
+                      auth = False, **params):
         params[self._idtype(user, is_screen_name = is_screen_name)] = user
         data = self._api("statuses", "user_timeline", params, noauth = not auth)
         return data
@@ -367,7 +377,8 @@ class api():
         params["user_b"] = user_b
         return self._api("friendship", "exists", params, noauth = not auth)
     
-    def friends_show(self, target, source = "", is_screen_name = False, auth = False, **params):
+    def friends_show(self, target, source = "",
+                     is_screen_name = False, auth = False, **params):
         tp = ("target_id", "target_screen_name")
         params[self._idtype(target, tp, is_screen_name = is_screen_name)] = target
         
@@ -385,11 +396,13 @@ class api():
     #
     # Social Graph Methods
     #
-    def friends_ids(self, user = "", is_screen_name = False, auth = False, **params):
+    def friends_ids(self, user = "",
+                    is_screen_name = False, auth = False, **params):
         params[self._idtype(user, is_screen_name = is_screen_name)] = user
         return self._api("friendship", "friends", params, noauth = not auth)
     
-    def followers_ids(self, user = "", is_screen_name = False, auth = False, **params):
+    def followers_ids(self, user = "",
+                      is_screen_name = False, auth = False, **params):
         params[self._idtype(user, is_screen_name = is_screen_name)] = user
         return self._api("friendship", "followers", params, noauth = not auth)
 
