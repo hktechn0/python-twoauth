@@ -50,7 +50,7 @@ class api():
             self.oauth = oauth_obj
         
         if screen_name:
-            self.user = { "user" : screen_name }
+            self.user = { "screen_name" : screen_name }
         else:
             self.user = dict()
 
