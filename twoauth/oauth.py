@@ -180,7 +180,7 @@ class oauth():
             "oauth_consumer_key": self.ckey,
             "oauth_signature_method": "HMAC-SHA1",
             "oauth_timestamp": str(int(time.time())),
-            "oauth_nonce": self._rand_str(20),
+            "oauth_nonce": self._rand_str(10),
             "oauth_version": "1.0",
             "oauth_token" : token
             }
