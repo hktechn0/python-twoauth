@@ -48,11 +48,20 @@ class api():
             self.oauth = oauth.oauth(ckey, csecret, atoken, asecret)
         else:
             self.oauth = oauth_obj
-
+        
         if screen_name:
             self.user = { "user" : screen_name }
         else:
             self.user = dict()
+
+        # ratelimit var init
+        self.ratelimit_limit = -1
+        self.ratelimit_remaining = -1
+        self.ratelimit_reset = datetime.datetime.now()
+
+        self.ratelimit_iplimit = -1
+        self.ratelimit_ipremaining = -1
+        self.ratelimit_ipreset = datetime.datetime.now()
     
     # Option initialization method
     # Only for backward compatibility...    
