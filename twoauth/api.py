@@ -49,11 +49,8 @@ class api():
         else:
             self.oauth = oauth_obj
         
-        if screen_name:
-            self.user = { "screen_name" : screen_name }
-        else:
-            self.user = dict()
-
+        self.user = { "screen_name" : screen_name }
+        
         # ratelimit var init
         self.ratelimit_limit = -1
         self.ratelimit_remaining = -1
@@ -179,7 +176,8 @@ class api():
         
         # if user not in replace list, add auth user
         if "user" not in replace or not replace["user"]:
-            replace["user"] = self.user["screen_name"]
+            if "screen_name" in self.user:
+                replace["user"] = self.user["screen_name"]
         
         tmpl = string.Template(url)
         rurl = tmpl.substitute(replace)
