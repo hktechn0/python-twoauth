@@ -121,8 +121,6 @@ class oauth():
     
     # Return urllib2.Request Object for OAuth
     def oauth_request(self, url, method = "GET", add_params = {}):
-        self._init_params()
-
         enc_params = {}
         if add_params:
             api_params = urllib.urlencode(add_params)
@@ -148,8 +146,6 @@ class oauth():
 
     # Return httplib.HTTPResponse (for DELETE Method
     def oauth_http_request(self, url, method = "GET", add_params = {}):
-        self._init_params()
-        
         enc_params = {}
         if add_params:
             api_params = urllib.urlencode(add_params)
@@ -170,7 +166,6 @@ class oauth():
     def _rand_str(self, n):
         seq = string.ascii_letters + string.digits
         return ''.join(random.choice(seq) for i in xrange(n))
-        
     
     def _init_params(self, token = None):
         if token == None:
@@ -187,6 +182,9 @@ class oauth():
     
     def _make_signature(self, url, method = "GET", 
                         secret = "", add_params = {}):
+        # init OAuth params
+        self._init_params()
+        
         sigparams = {}
         sigparams.update(self.params)
         sigparams.update(add_params)
