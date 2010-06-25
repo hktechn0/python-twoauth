@@ -32,11 +32,12 @@
 
 import urllib2_file
 import urllib2
+import json
 
 import oauth
 
 class Twitpic:
-    upload_url = "http://api.twitpic.com/2/upload.xml"
+    upload_url = "http://api.twitpic.com/2/upload.json"
     verify_credentials_url = "https://api.twitter.com/1/account/verify_credentials.json"
     
     def __init__(self, oauth, apikey):
@@ -62,7 +63,8 @@ class Twitpic:
             "media": image
             }
         
-        return urllib2.urlopen(req, params)
+        response = urllib2.urlopen(req, params).read()
+        return json.loads(response)
 
 if __name__ == "__main__":
     import sys
