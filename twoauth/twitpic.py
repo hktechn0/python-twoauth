@@ -30,14 +30,18 @@
 
 # Twitpic API v2 wrapper methods
 
-import urllib2_file
-import urllib2
+import httplib
 import json
+import email.mime.image
+import email.mime.multipart
+import email.mime.text
+import email.encoders
 
 import oauth
 
 class Twitpic:
-    upload_url = "http://api.twitpic.com/2/upload.json"
+    host = "api.twitpic.com"
+    url = "/2/upload.json"
     verify_credentials_url = "https://api.twitter.com/1/account/verify_credentials.json"
     
     def __init__(self, oauth, apikey):
@@ -45,25 +49,44 @@ class Twitpic:
         self.apikey = apikey
     
     def upload(self, image, message = ""):
-        req = urllib2.Request(self.upload_url)
-
-        header = self.oauth.oauth_header(
+        imgdata = image.read()
+        mimeimg = email.mime.image.MIMEImage(imgdata, _encoder = email.encoders.encode_noop)
+        mimeimg.add_header("Content-Disposition", "form-data", name = "media", filename = "media")
+        mimeimg.add_header("Content-Length", str(len(imgdata)))
+        mimekey = email.mime.text.MIMEText(self.apikey)
+        mimekey.add_header("Content-Disposition", "form-data", name = "key")
+        mimemsg = email.mime.text.MIMEText(message)
+        mimemsg.set_charset("utf-8")
+        mimemsg.add_header("Content-Disposition", "form-data", name = "message")
+        
+        data = email.mime.multipart.MIMEMultipart("form-data")
+        data.attach(mimekey)
+        data.attach(mimemsg)
+        data.attach(mimeimg)
+        
+        multipart = data.as_string()
+        ctype, multipart = multipart.split("\n\n", 1)
+        
+        c = httplib.HTTPConnection(self.host)
+        c.putrequest("POST", self.url)
+        
+        oauth_header = self.oauth.oauth_header(
             self.verify_credentials_url, 
             secret = self.oauth.asecret)
-        header += ', realm="http://api.twitter.com/"'
+        oauth_header += ', realm="http://api.twitter.com/"'
         
-        req.add_header("X-Verify-Credentials-Authorization",
-                       header)
-        req.add_header("X-Auth-Service-Provider",
-                       self.verify_credentials_url)
+        c.putheader("X-Verify-Credentials-Authorization",
+                    oauth_header)
+        c.putheader("X-Auth-Service-Provider",
+                    self.verify_credentials_url)
         
-        params = {
-            "key": self.apikey,
-            "message": message,
-            "media": image
-            }
+        c.putheader("Content-Length", str(len(multipart)))
+        c.putheader("Content-Type", ctype.split(": ", 1)[-1])
         
-        response = urllib2.urlopen(req, params).read()
+        c.endheaders()
+        c.send(multipart)
+        
+        response = c.getresponse().read()
         return json.loads(response)
 
 if __name__ == "__main__":
@@ -78,6 +101,8 @@ if __name__ == "__main__":
     apikey = "dcb62be3b2f310d4484f22364c1edd65"
     
     oauth = oauth.oauth(ckey, csecret, atoken, asecret)
+
     twpic = Twitpic(oauth, apikey)
-    
-    twpic.upload(open(filepath), "test")
+    ret = twpic.upload(open(filepath, "rb"), "らりるれろ")
+
+    print ret
