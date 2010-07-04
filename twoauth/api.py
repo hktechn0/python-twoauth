@@ -108,12 +108,12 @@ class api():
     def _api_noauth(self, url, params):
         # No use OAuth, GET only
         paramstr = urllib.urlencode(params)
-
+        
         data = urllib2.urlopen("%s?%s" % (url, paramstr))
-
+        
         header = data.info()
         self._set_ratelimit_ip(header)
-
+        
         xml = data.read()
         return twitterxml.xmlparse(xml)
     
@@ -123,8 +123,10 @@ class api():
         params = self._rm_noparams(params)
         params = self._convert_str_params(params)
         
-        res = self.oauth.oauth_http_request(url, "DELETE", params)
-        return twitterxml.xmlparse(res.read())
+        conn = self.oauth.oauth_http_request(url, "DELETE", params)
+        response = conn.getresponse()
+        
+        return twitterxml.xmlparse(response.read())
     
     def _set_ratelimit(self, header):
         try:

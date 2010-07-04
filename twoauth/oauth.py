@@ -180,7 +180,7 @@ class oauth():
                 "Authorization" : 
                 self.oauth_header(url, method, enc_params, self.asecret)})
         
-        return con.getresponse()
+        return con
     
     # Get random string (for oauth_nonce)
     def _rand_str(self, n):
