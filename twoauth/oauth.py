@@ -164,7 +164,7 @@ class oauth():
         return req
     
     # Return httplib.HTTPResponse (for DELETE Method and Streaming API
-    def oauth_http_request(self, url, method = "GET", add_params = {}):
+    def oauth_http_request(self, url, method = "GET", add_params = {}, header = {}):
         enc_params = {}
         if add_params:
             api_params = urllib.urlencode(add_params)
@@ -173,14 +173,18 @@ class oauth():
         else:
             api_params = ""
         
+        header["Authorization"] = self.oauth_header(url, method, enc_params, self.asecret)
+        
         urlp = urlparse.urlparse(url)
-        con = httplib.HTTPConnection(urlp.netloc)
+        conn = httplib.HTTPConnection(urlp.netloc)
         
-        con.request(method, urlp.path, api_params, {
-                "Authorization" : 
-                self.oauth_header(url, method, enc_params, self.asecret)})
+        if method == "GET":
+            path = "%s?%s" % (urlp.path, api_params)
+            conn.request(method, path, headers = header)
+        else:
+            conn.request(method, urlp.path, api_params, header)
         
-        return con
+        return conn
     
     # Get random string (for oauth_nonce)
     def _rand_str(self, n):
