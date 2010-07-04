@@ -81,6 +81,9 @@ class twitterxml:
         if d:
             #d = int(d) \
             #    if d.isdigit() and name[-2:] == "id" else d
+            if d == "true": d = True
+            elif d == "false": d = False
+            
             if mode:
                 # for ids
                 self.data.append(d)
@@ -89,7 +92,7 @@ class twitterxml:
                 self.data.append([name, d])
         elif self.name and name == self.name[-1]:
             # empty element
-            self.data.append([name, ""])
+            self.data.append([name, None])
         else:
             elements = []
             while self.name.pop() != name:

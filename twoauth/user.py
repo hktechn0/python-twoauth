@@ -43,18 +43,17 @@ class twuser(UserDict.UserDict):
                   "favourites_count", 
                   "utc_offset", "statuses_count"):
             setattr(self, i, int(user[i]) \
-                        if user[i] != "" else None)
+                        if user[i] != None else None)
         
         for i in ("protected", "following", "verified"):
-            setattr(self, i,
-                    True if user[i] == "true" else False)
+            setattr(self, i,  user[i])
         
         for i in ("name", "screen_name", "location",
                   "description", "profile_image_url",
                   "url", "time_zone"):
             setattr(self, i, unicode(user[i]))
-
+        
         self.created_at = twittertime(user["created_at"])
-
+        
         if "status" in user.keys():
             self.status = status.twstatus(user["status"])

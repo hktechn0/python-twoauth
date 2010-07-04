@@ -38,21 +38,23 @@ class twstatus(UserDict.UserDict):
         status = dict(d)
         self.data = status
         
+        if "delete" in status: return
+        
         self.created_at = twittertime(status["created_at"])
         
         for i in ("id", "in_reply_to_status_id",
                   "in_reply_to_user_id"):
             setattr(self, i, int(status[i]) \
-                        if status[i] != "" else None)
+                        if status[i] != None else None)
         
         for i in ("text", "source", "in_reply_to_screen_name"):
             setattr(self, i, unicode(status[i]) \
-                        if status[i] != "" else None)
+                        if status[i] != None else None)
         
         self.source_name = twittersource(self.source)
         
         for i in ("favorited", "truncated"):
-            True if status[i] == "true" else False
-
+            setattr(self, i, status[i])
+        
         if "user" in status.keys():
             self.user = user.twuser(status["user"])
