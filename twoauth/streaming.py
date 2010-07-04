@@ -23,9 +23,14 @@ class stream(threading.Thread):
     
     def run(self):
         while True:
-            # get delimited (number of bytes that should read
-            s = self.hose.read(10)
-            bytes, s = s.split("\n", 1)
+            s = str()
+            
+            while True:
+                # get delimited (number of bytes that should read
+                s += self.hose.read(10)
+                if s.strip().find("\n") > 0: break
+            
+            bytes, s = s.strip().split("\n", 1)
             
             # read stream
             self._lock.acquire()
