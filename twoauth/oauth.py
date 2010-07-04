@@ -7,7 +7,7 @@
 # - http://www.techno-st.net/wiki/python-twoauth
 #
 #
-# Copyright (c) 2009 Hirotaka Kawata
+# Copyright (c) 2009-2010 Hirotaka Kawata
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -61,11 +61,15 @@ class oauth():
     
     # Get Request Token
     def request_token(self):
-        self._init_params()
-        del self.params["oauth_token"]
+        # initialize OAuth parameters
+        oauth_params = self._init_params()
+        del oauth_params["oauth_token"]
         
-        auth_header = self.oauth_header(self.reqt_url)
-
+        # get OAuth header
+        auth_header = self.oauth_header(self.reqt_url,
+                                        oauth_params = oauth_params)
+        
+        # send request
         req = urllib2.Request(self.reqt_url)
         req.add_header("Authorization", auth_header)
         resp = urllib2.urlopen(req)
@@ -84,14 +88,19 @@ class oauth():
     
     # Get Access Token
     def access_token(self, token_info, pin):
+        # set request token information
         token = token_info["oauth_token"]
         secret = token_info["oauth_token_secret"]
-
-        self._init_params(token)
-        self.params["oauth_verifier"] = pin
-
-        auth_header = self.oauth_header(self.acct_url, secret = secret)
         
+        # initialize OAuth parameters
+        oauth_params = self._init_params(token)
+        oauth_params["oauth_verifier"] = pin
+        
+        # get OAuth header
+        auth_header = self.oauth_header(self.acct_url, secret = secret,
+                                        oauth_params = oauth_params)
+        
+        # send request
         req = urllib2.Request(self.acct_url)
         req.add_header("Authorization", auth_header)
         resp = urllib2.urlopen(req)
@@ -101,6 +110,7 @@ class oauth():
         for p in token_info:
             token_info[p] = token_info[p][0]
         
+        # set token and secret to instance if not set
         if not self.atoken and not self.asecret:
             self.atoken = token_info["oauth_token"]
             self.asecret = token_info["oauth_token_secret"]
@@ -108,19 +118,26 @@ class oauth():
         return token_info
     
     # Return Authorization Header String
-    def oauth_header(self, url, method = "GET", add_params = {}, secret = ""):
-        sig = self._make_signature(url, method, secret, add_params)
-        self.params["oauth_signature"] = sig
+    def oauth_header(self, url, method = "GET", add_params = {}, secret = "", oauth_params = None):
+        # initialize OAuth parameters if no given oauth_params
+        if oauth_params == None:
+            oauth_params = self._init_params()
         
+        # get oauth_signature
+        sig = self._make_signature(url, oauth_params, method, secret, add_params)
+        oauth_params["oauth_signature"] = sig
+        
+        # quote OAuth format
         plist = []
-        for p in self.params:
+        for p in oauth_params:
             plist.append('%s="%s"' % (
-                    self._oquote(p), self._oquote(self.params[p])))
+                    self._oquote(p), self._oquote(oauth_params[p])))
         
         return "OAuth %s" % (", ".join(plist))
     
     # Return urllib2.Request Object for OAuth
     def oauth_request(self, url, method = "GET", add_params = {}):
+        # quote parameters
         enc_params = {}
         if add_params:
             api_params = urllib.urlencode(add_params)
@@ -129,6 +146,7 @@ class oauth():
         else:
             api_params = ""
         
+        # create urllib2.Request
         if method == "GET":
             if add_params:
                 req = urllib2.Request("%s?%s" % (url, api_params))
@@ -139,12 +157,13 @@ class oauth():
         else:
             raise
         
+        # set OAuth header
         req.add_header("Authorization", self.oauth_header(
                 url, method, enc_params, secret = self.asecret))
         
         return req
-
-    # Return httplib.HTTPResponse (for DELETE Method
+    
+    # Return httplib.HTTPResponse (for DELETE Method and Streaming API
     def oauth_http_request(self, url, method = "GET", add_params = {}):
         enc_params = {}
         if add_params:
@@ -163,15 +182,17 @@ class oauth():
         
         return con.getresponse()
     
+    # Get random string (for oauth_nonce)
     def _rand_str(self, n):
         seq = string.ascii_letters + string.digits
         return ''.join(random.choice(seq) for i in xrange(n))
     
+    # Initialize OAuth parameters
     def _init_params(self, token = None):
         if token == None:
             token = self.atoken
 
-        self.params = {
+        params = {
             "oauth_consumer_key": self.ckey,
             "oauth_signature_method": "HMAC-SHA1",
             "oauth_timestamp": str(int(time.time())),
@@ -179,14 +200,14 @@ class oauth():
             "oauth_version": "1.0",
             "oauth_token" : token
             }
-    
-    def _make_signature(self, url, method = "GET", 
-                        secret = "", add_params = {}):
-        # init OAuth params
-        self._init_params()
         
+        return params
+    
+    # calculate oauth_signature
+    def _make_signature(self, url, oauth_params, method = "GET", 
+                        secret = "", add_params = {}):
         sigparams = {}
-        sigparams.update(self.params)
+        sigparams.update(oauth_params)
         sigparams.update(add_params)
         
         # Generate Signature Base String
@@ -205,6 +226,7 @@ class oauth():
         
         return sig
     
+    # quote string for OAuth format
     def _oquote(self, s):
         return urllib.quote(str(s), "-._~")
 
