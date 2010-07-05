@@ -58,3 +58,8 @@ class twstatus(UserDict.UserDict):
         
         if "user" in status.keys():
             self.user = user.twuser(status["user"])
+
+        if "retweeted_status" in status.keys():
+            self.retweeted_status = twstatus(status["retweeted_status"])
+        else:
+            self.retweeted_status = None
