@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#-*- coding: utf-8 -*-
 
 import httplib
 import urlparse
@@ -18,16 +19,16 @@ class stream(threading.Thread):
         self.hose = hose
         self.event = threading.Event()
         self._lock = threading.Lock()
-        self._buffer = str()
+        self._buffer = unicode()
         self.start()
     
     def run(self):
         while True:
-            s = str()
+            s = unicode()
             
             while True:
                 # get delimited (number of bytes that should read
-                s += self.hose.read(10)
+                s += self.hose.read(1)
                 if s.strip().find("\n") > 0: break
             
             bytes, s = s.strip().split("\n", 1)
@@ -56,7 +57,7 @@ class stream(threading.Thread):
             statuses = []
             print >>sys.stderr, "[Error] %s" % e
         else:
-            statuses = json.loads("[%s]" % json_str.replace("\n", ","))
+            statuses = json.loads(u"[%s]" % json_str.replace("\n", ","))
         
         self._lock.release()
         
@@ -93,11 +94,12 @@ class streaming_api:
         
         params = dict()
         if follow:
-            params["follow"] = ",".join([str(i) for i in follow])
+            params["follow"] = urllib.quote(u",".join([unicode(i) for i in follow]).encode("utf-8"), ",")
         if locations:
-            params["locations"] = ",".join([str(i) for i in locations])
+            params["locations"] = urllib.quote(u",".join([unicode(i) for i in locations]).encode("utf-8"), ",")
         if track:
-            params["track"] = ",".join([str(i) for i in track])
+            params["track"] = urllib.quote(u",".join([unicode(i) for i in track]).encode("utf-8"), ",")
+            print params["track"]
             
         return stream(self._start(path, params))
 
@@ -114,6 +116,7 @@ if __name__ == "__main__":
     s = streaming_api(oauth)
     #streaming = s.filter(locations = [-122.75,36.8,-121.75,37.8,-74,40,-73,41])
     streaming = s.sample()
+    #streaming = s.filter(track = [u"spcamp", u"セプキャン"])
     
     while True:
         statuses = streaming.pop()
