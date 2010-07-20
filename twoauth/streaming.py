@@ -11,7 +11,7 @@ import oauth
 import status
 
 # Streaming API Stream class
-class stream(threading.Thread):
+class Stream(threading.Thread):
     def __init__(self, hose):
         threading.Thread.__init__(self)
         self.setDaemon(True)
@@ -65,7 +65,7 @@ class stream(threading.Thread):
                 for i in statuses]
 
 # Streaming API class
-class streaming_api:
+class StreamingAPI:
     def __init__(self, oauth):
         self.oauth = oauth
     
@@ -87,7 +87,7 @@ class streaming_api:
     
     def sample(self):
         path = "/1/statuses/sample.json"
-        return stream(self._start(path))
+        return Stream(self._start(path))
     
     def filter(self, follow = [], locations = [], track = []):
         path = "/1/statuses/filter.json"
@@ -101,7 +101,7 @@ class streaming_api:
             params["track"] = urllib.quote(u",".join([unicode(i) for i in track]).encode("utf-8"), ",")
             print params["track"]
             
-        return stream(self._start(path, params))
+        return Stream(self._start(path, params))
 
 if __name__ == "__main__":
     import sys
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     
     oauth = oauth.oauth(ckey, csecret, atoken, asecret)
     
-    s = streaming_api(oauth)
+    s = StreamingAPI(oauth)
     #streaming = s.filter(locations = [-122.75,36.8,-121.75,37.8,-74,40,-73,41])
     streaming = s.sample()
     #streaming = s.filter(track = [u"spcamp", u"セプキャン"])
