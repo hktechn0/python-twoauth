@@ -38,6 +38,7 @@ import httplib
 import urlparse
 import hmac, hashlib
 import cgi
+import cStringIO
 
 class oauth():
     def __init__(self, ckey, csecret, atoken = "", asecret = "",
@@ -158,12 +159,12 @@ class oauth():
             raise
         
         # set OAuth header
-        req.add_header("Authorization", self.oauth_header(
-                url, method, enc_params, secret = self.asecret))
+        req.add_header("Authorization", 
+                       self.oauth_header(url, method, enc_params, self.asecret))
         
         return req
     
-    # Return httplib.HTTPResponse (for DELETE Method and Streaming API
+    # Return httplib.HTTPResponse (for DELETE Method
     def oauth_http_request(self, url, method = "GET", add_params = {}, header = {}):
         enc_params = {}
         if add_params:
@@ -222,7 +223,7 @@ class oauth():
         pstr = "&".join(plist)
         msg = "%s&%s&%s" % (
             method, self._oquote(url), self._oquote(pstr))
-        
+
         # Calculate Signature
         h = hmac.new("%s&%s" % (
                 self.csecret, secret), msg, hashlib.sha1)
