@@ -36,6 +36,10 @@ class Stream(threading.Thread):
             while not (delimited != "" and c == "\n"):
                 c = hose.read(1)
                 delimited += c.strip()
+                
+                if c == "" or self.die:
+                    hose.close()
+                    return                
             
             bytes = int(delimited)
             
