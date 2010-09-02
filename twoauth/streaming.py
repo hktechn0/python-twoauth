@@ -53,9 +53,8 @@ class Stream(threading.Thread):
         
         # connection close before finish thread
         hose.close()
-    
-    # pop statuses
-    def pop(self):
+
+    def read(self):
         json_str = None
         
         self._lock.acquire()
@@ -68,22 +67,27 @@ class Stream(threading.Thread):
         finally:
             self._lock.release()
         
-        if json_str == None: return []
+        return json_str
+    
+    # pop statuses
+    def pop(self):
+        data = self.read()
+        if data == None: return []
         
         return [status.twstatus(i) if "text" in i.keys() else i
-                for i in json.loads(u"[%s]" % json_str.replace("\n", ","))]
+                for i in json.loads(u"[%s]" % data.strip().replace("\n", ","))]
     
     def stop(self):
         self.die = True
 
 # Streaming API class
 class StreamingAPI:
-    def __init__(self, oauth):
+    def __init__(self, oauth, host = "stream.twitter.com"):
         self.oauth = oauth
+        self.host = host
     
-    def _request(self, path, method = "GET", params = {}):
-        host = "stream.twitter.com"
-        url = "http://%s%s" % (host, path)
+    def _request(self, path, method = "GET", params = {}):    
+        url = "http://%s%s" % (self.host, path)
         
         # added delimited parameter
         params["delimited"] = "length"
@@ -121,7 +125,7 @@ if __name__ == "__main__":
     s = StreamingAPI(oauth)
     #streaming = s.sample()
     streaming = s.filter(locations = [-122.75,36.8,-121.75,37.8,-74,40,-73,41])
-    #streaming = s.filter(track = [u"spcamp", u"セプキャン"])
+    #streaming = s.filter(track = [u"followme", u"followmejp"])
     
     streaming.start()
     
