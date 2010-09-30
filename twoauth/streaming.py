@@ -12,15 +12,15 @@ import status
 
 # Streaming API Stream class
 class Stream(threading.Thread):
-    die = False
-    _buffer = unicode()
-    _lock = threading.Lock()
-    event = threading.Event()
-    
     def __init__(self, request):
         threading.Thread.__init__(self)
         self.setDaemon(True)
         self.request = request
+
+        self.die = False
+        self._buffer = unicode()
+        self._lock = threading.Lock()
+        self.event = threading.Event()
     
     def run(self):
         hose = urllib2.urlopen(self.request)
@@ -82,25 +82,22 @@ class Stream(threading.Thread):
 
 # Streaming API class
 class StreamingAPI:
-    def __init__(self, oauth, host = "stream.twitter.com"):
+    def __init__(self, oauth):
         self.oauth = oauth
-        self.host = host
     
     def _request(self, path, method = "GET", params = {}):    
-        url = "http://%s%s" % (self.host, path)
-        
         # added delimited parameter
         params["delimited"] = "length"
-        req = self.oauth.oauth_request(url, method, params)
+        req = self.oauth.oauth_request(path, method, params)
         
         return req
     
     def sample(self):
-        path = "/1/statuses/sample.json"
+        path = "http://stream.twitter.com/1/statuses/sample.json"
         return Stream(self._request(path))
     
     def filter(self, follow = [], locations = [], track = []):
-        path = "/1/statuses/filter.json"
+        path = "http://stream.twitter.com/1/statuses/filter.json"
         
         params = dict()
         if follow:
@@ -111,6 +108,10 @@ class StreamingAPI:
             params["track"] = urllib.quote(u",".join([unicode(i) for i in track]).encode("utf-8"), ",")
         
         return Stream(self._request(path, "POST", params))
+    
+    def user(self, **params):
+        path = "https://userstream.twitter.com/2/user.json"
+        return Stream(self._request(path, params = params))
 
 if __name__ == "__main__":
     import sys
@@ -123,9 +124,7 @@ if __name__ == "__main__":
     oauth = oauth.oauth(ckey, csecret, atoken, asecret)
     
     s = StreamingAPI(oauth)
-    #streaming = s.sample()
-    streaming = s.filter(locations = [-122.75,36.8,-121.75,37.8,-74,40,-73,41])
-    #streaming = s.filter(track = [u"followme", u"followmejp"])
+    streaming = s.user()
     
     streaming.start()
     
@@ -136,7 +135,7 @@ if __name__ == "__main__":
                 print i.user.screen_name, i.text
             except:
                 print i
-
+        
         if raw_input() == "q":
             streaming.stop()
             break
