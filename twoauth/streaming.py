@@ -12,11 +12,12 @@ import status
 
 # Streaming API Stream class
 class Stream(threading.Thread):
-    def __init__(self, request):
+    def __init__(self, request, keepconn = True):
         threading.Thread.__init__(self)
         self.setDaemon(True)
         self.request = request
-
+        self._keep = keepconn
+        
         self.die = False
         self._buffer = unicode()
         self._lock = threading.Lock()
@@ -37,9 +38,19 @@ class Stream(threading.Thread):
                 c = hose.read(1)
                 delimited += c.strip()
                 
-                if c == "" or self.die:
+                # broken streaming hose?
+                if c == "":
                     hose.close()
-                    return                
+                    if self._keep:
+                        delimited = unicode()
+                        hose = urllib2.urlopen(self.request)
+                        continue
+                    else: return
+                
+                # destroy
+                if self.die:
+                    hose.close()
+                    return
             
             bytes = int(delimited)
             
@@ -53,7 +64,7 @@ class Stream(threading.Thread):
         
         # connection close before finish thread
         hose.close()
-
+    
     def read(self):
         json_str = None
         
