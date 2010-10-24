@@ -12,58 +12,61 @@ import status
 
 # Streaming API Stream class
 class Stream(threading.Thread):
-    def __init__(self, request, keepconn = True):
+    def __init__(self, request):
         threading.Thread.__init__(self)
         self.setDaemon(True)
         self.request = request
-        self._keep = keepconn
         
-        self.die = False
+        self._hose = None
         self._buffer = unicode()
         self._lock = threading.Lock()
         self.event = threading.Event()
+        self.die = False
+    
+    def _get_delimited(self):
+        # tooooooooo slow (maybe readline() has big buffer)
+        # while delimited == "":
+        #    delimited = hose.readline().strip()
+        
+        delimited = unicode()
+        
+        # get delimited (number of bytes that should be read
+        while not (delimited != "" and c == "\n"):
+            c = self._hose.read(1)                
+            delimited += c.strip()
+            
+            # broken streaming hose or destroy
+            if c == "" or self.die:
+                return
+        
+        return int(delimited)
     
     def run(self):
-        hose = urllib2.urlopen(self.request)
+        self._hose = urllib2.urlopen(self.request)
         
         while not self.die:
-            delimited = unicode()
+            bytes = self._get_delimited()
             
-            # tooooooooo slow (maybe readline() has big buffer)
-            #while delimited == "":
-            #    delimited = hose.readline().strip()
-            
-            # get delimited (number of bytes that should be read
-            while not (delimited != "" and c == "\n"):
-                c = hose.read(1)
-                delimited += c.strip()
+            if bytes == None:
+                if self.die: break
                 
-                # broken streaming hose?
-                if c == "":
-                    hose.close()
-                    if self._keep:
-                        delimited = unicode()
-                        hose = urllib2.urlopen(self.request)
-                        continue
-                    else: return
-                
-                # destroy
-                if self.die:
-                    hose.close()
-                    return
-            
-            bytes = int(delimited)
+                # Reconnect
+                while False:
+                    try: self._hose = urllib2.urlopen(self.request)
+                    except urllib2.HTTPError, e:
+                        if e.code == 401: continue
+                        else: raise
             
             # read stream
             self._lock.acquire()
-            self._buffer += hose.read(bytes)
+            self._buffer += self._hose.read(bytes)
             self._lock.release()
             
             self.event.set()
             self.event.clear()
         
         # connection close before finish thread
-        hose.close()
+        self._hose.close()
     
     def read(self):
         json_str = None
@@ -85,8 +88,8 @@ class Stream(threading.Thread):
         data = self.read()
         if data == None: return []
         
-        return [status.twstatus(i) if "text" in i.keys() else i
-                for i in json.loads(u"[%s]" % data.strip().replace("\n", ","))]
+        return (status.twstatus(i) if "text" in i.keys() else i
+                for i in json.loads(u"[%s]" % data.strip().replace("\n", ",")))
     
     def stop(self):
         self.die = True
@@ -147,6 +150,4 @@ if __name__ == "__main__":
             except:
                 print i
         
-        if raw_input() == "q":
-            streaming.stop()
-            break
+        streaming.event.wait()
