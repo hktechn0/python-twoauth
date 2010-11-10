@@ -88,14 +88,14 @@ class Stream(threading.Thread):
         data = self.read()
         if data == None: return []
         
-        return (status.twstatus(i) if "text" in i.keys() else i
-                for i in json.loads(u"[%s]" % data.strip().replace("\n", ",")))
+        return [status.TwitterStatus(i) if "text" in i.keys() else i
+                for i in map(json.loads, data.strip().split("\n"))]
     
     def stop(self):
         self.die = True
 
 # Streaming API class
-class StreamingAPI:
+class StreamingAPI(object):
     def __init__(self, oauth):
         self.oauth = oauth
     
@@ -126,28 +126,3 @@ class StreamingAPI:
     def user(self, **params):
         path = "https://userstream.twitter.com/2/user.json"
         return Stream(self._request(path, params = params))
-
-if __name__ == "__main__":
-    import sys
-
-    ckey = sys.argv[1]
-    csecret = sys.argv[2]
-    atoken = sys.argv[3]
-    asecret = sys.argv[4]
-    
-    oauth = oauth.oauth(ckey, csecret, atoken, asecret)
-    
-    s = StreamingAPI(oauth)
-    streaming = s.user()
-    
-    streaming.start()
-    
-    while True:
-        statuses = streaming.pop()
-        for i in statuses:
-            try:
-                print i.user.screen_name, i.text
-            except:
-                print i
-        
-        streaming.event.wait()

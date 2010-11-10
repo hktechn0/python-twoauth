@@ -40,7 +40,9 @@ import hmac, hashlib
 import cgi
 import cStringIO
 
-class oauth():
+class oauth(object):
+    _randchars = string.ascii_letters + string.digits
+    
     def __init__(self, ckey, csecret, atoken = "", asecret = "",
                  site = "http://twitter.com/"):
         # Request Token URL
@@ -77,7 +79,7 @@ class oauth():
         
         # Parse Token Parameters
         token_info = cgi.parse_qs(resp.read())
-        for p in token_info:
+        for p in token_info.keys():
             token_info[p] = token_info[p][0]
         
         return token_info
@@ -108,7 +110,7 @@ class oauth():
         
         # Parse Access Token
         token_info = cgi.parse_qs(resp.read())
-        for p in token_info:
+        for p in token_info.keys():
             token_info[p] = token_info[p][0]
         
         # set token and secret to instance if not set
@@ -118,79 +120,80 @@ class oauth():
         
         return token_info
     
+    # calculate oauth_signature
+    def oauth_signature(self, url, method = "GET", secret = "", *params):
+        sigparams = {}
+        for d in params: sigparams.update(d)
+        
+        # Generate Signature Base String
+        plist = ["%s=%s" % (k, v) for k, v in sorted(sigparams.items())]
+        
+        pstr = "&".join(plist)
+        msg = "%s&%s&%s" % (method, self._oquote(url), self._oquote(pstr))
+        
+        # Calculate Signature
+        h = hmac.new("%s&%s" % (self.csecret, secret), msg, hashlib.sha1)
+        sig = h.digest().encode("base64").strip()
+        
+        return sig
+    
     # Return Authorization Header String
-    def oauth_header(self, url, method = "GET", add_params = {}, secret = "", oauth_params = None):
+    def oauth_header(self, url, method = "GET", params = {}, secret = "", oauth_params = None):
         # initialize OAuth parameters if no given oauth_params
         if oauth_params == None:
             oauth_params = self._init_params()
         
+        # Encode params for OAuth format
+        keys = map(self._oquote, params.iterkeys())
+        values = map(self._oquote, params.itervalues())
+        enc_params = dict(zip(keys, values))
+        
         # get oauth_signature
-        sig = self._make_signature(url, oauth_params, method, secret, add_params)
+        sig = self.oauth_signature(url, method, secret, oauth_params, enc_params)
         oauth_params["oauth_signature"] = sig
         
         # quote OAuth format
-        plist = []
-        for p in oauth_params:
-            plist.append('%s="%s"' % (
-                    self._oquote(p), self._oquote(oauth_params[p])))
+        plist = ['%s="%s"' % (self._oquote(k), self._oquote(v)) for k, v in oauth_params.iteritems()]
         
         return "OAuth %s" % (", ".join(plist))
     
     # Return urllib2.Request Object for OAuth
-    def oauth_request(self, url, method = "GET", add_params = {}):
-        # quote parameters
-        enc_params = {}
-        if add_params:
-            api_params = urllib.urlencode(add_params)
-            for p in add_params:
-                enc_params[self._oquote(p)] = self._oquote(add_params[p])
-        else:
-            api_params = ""
-        
+    def oauth_request(self, url, method = "GET", params = {}):
         # create urllib2.Request
         if method == "GET":
-            if add_params:
-                req = urllib2.Request("%s?%s" % (url, api_params))
+            if params:
+                req = urllib2.Request("%s?%s" % (url, urllib.urlencode(params)))
             else:
                 req = urllib2.Request(url)
         elif method == "POST":
-            req = urllib2.Request(url, api_params)
+            req = urllib2.Request(url, urllib.urlencode(params))
         else:
             raise
         
         # set OAuth header
         req.add_header("Authorization", 
-                       self.oauth_header(url, method, enc_params, self.asecret))
+                       self.oauth_header(url, method, params, self.asecret))
         
         return req
     
     # Return httplib.HTTPResponse (for DELETE Method
-    def oauth_http_request(self, url, method = "GET", add_params = {}, header = {}):
-        enc_params = {}
-        if add_params:
-            api_params = urllib.urlencode(add_params)
-            for p in add_params:
-                enc_params[self._oquote(p)] = self._oquote(add_params[p])
-        else:
-            api_params = ""
-        
-        header["Authorization"] = self.oauth_header(url, method, enc_params, self.asecret)
-        
+    def oauth_http_request(self, url, method = "GET", params = {}, header = {}):        
         urlp = urlparse.urlparse(url)
         conn = httplib.HTTPConnection(urlp.netloc)
         
+        header["Authorization"] = self.oauth_header(url, method, params, self.asecret)
+        
         if method == "GET":
-            path = "%s?%s" % (urlp.path, api_params)
+            path = "%s?%s" % (urlp.path, urllib.urlencode(params))
             conn.request(method, path, headers = header)
         else:
-            conn.request(method, urlp.path, api_params, header)
+            conn.request(method, urlp.path, urllib.urlencode(params), header)
         
         return conn
     
     # Get random string (for oauth_nonce)
     def _rand_str(self, n):
-        seq = string.ascii_letters + string.digits
-        return ''.join(random.choice(seq) for i in xrange(n))
+        return ''.join(random.choice(self._randchars) for i in xrange(n))
     
     # Initialize OAuth parameters
     def _init_params(self, token = None):
@@ -208,71 +211,6 @@ class oauth():
         
         return params
     
-    # calculate oauth_signature
-    def _make_signature(self, url, oauth_params, method = "GET", 
-                        secret = "", add_params = {}):
-        sigparams = {}
-        sigparams.update(oauth_params)
-        sigparams.update(add_params)
-        
-        # Generate Signature Base String
-        plist = []
-        for i in sorted(sigparams):
-            plist.append("%s=%s" % (i, sigparams[i]))
-        
-        pstr = "&".join(plist)
-        msg = "%s&%s&%s" % (
-            method, self._oquote(url), self._oquote(pstr))
-
-        # Calculate Signature
-        h = hmac.new("%s&%s" % (
-                self.csecret, secret), msg, hashlib.sha1)
-        sig = h.digest().encode("base64").strip()
-        
-        return sig
-    
     # quote string for OAuth format
     def _oquote(self, s):
         return urllib.quote(str(s), "-._~")
-
-if __name__ == "__main__":
-    import sys
-    ckey = sys.argv[1]
-    csecret = sys.argv[2]
-
-    oa = oauth(ckey, csecret)
-    req_token = oa.request_token()
-    auth_url = oa.authorize_url(req_token)
-
-    print "Authorize URL:"
-    print auth_url
-    print "PIN:",
-    pin = raw_input()
-
-    acc_token = oa.access_token(req_token, pin)
-
-    print "Screen Name: %s" % acc_token["screen_name"]
-    print "Access Token: %s" % acc_token["oauth_token"]
-    print "Access Token Secret: %s" % acc_token["oauth_token_secret"]
-    
-    # status update
-    post_url = 'http://twitter.com/statuses/update.xml'
-    # show friends timeline
-    frtl_url = 'http://twitter.com/statuses/friends_timeline.xml'
-
-    # Update Status by OAuth Authorization
-    print "What are you doing?:",
-    post = raw_input()
-    
-    req = oa.oauth_request(post_url, "POST", {"status" : post})
-    
-    try:
-        resp = urllib2.urlopen(req)
-    except urllib2.HTTPError, e:
-        print "Error: %s" % e
-        print e.read()
-    
-    # Get Friends Timeline by OAuth Authorization
-    req = oa.oauth_request(frtl_url)
-    resp = urllib2.urlopen(req)
-    print resp.read(500)

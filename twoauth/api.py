@@ -34,10 +34,11 @@ import sys
 import urllib, urllib2
 import string
 import datetime
+import json
 import oauth
-import twitterxml
+import status, user
 
-class api():
+class api(object):
     # url, method
     from url_method import url, method
     
@@ -55,32 +56,10 @@ class api():
         self.ratelimit_limit = -1
         self.ratelimit_remaining = -1
         self.ratelimit_reset = datetime.datetime.now()
-
+        
         self.ratelimit_iplimit = -1
         self.ratelimit_ipremaining = -1
         self.ratelimit_ipreset = datetime.datetime.now()
-    
-    # Option initialization method
-    # Only for backward compatibility...    
-    def initialize(self):
-        # Get user info
-        req = self.oauth.oauth_request(
-            self.url["account"]["verify_credentials"])
-        xml = urllib2.urlopen(req).read()
-        self.user = twitterxml.xmlparse(xml)
-        
-        # Get rate limit
-        limit = self.rate_limit()
-        self.ratelimit_limit = int(limit["hourly-limit"])
-        self.ratelimit_remaining = int(limit["remaining-hits"])
-        self.ratelimit_reset = datetime.datetime.fromtimestamp(
-            int(limit["reset-time-in-seconds"]))
-
-        iplimit = self.rate_limit(ip_limit = True)
-        self.ratelimit_iplimit = int(iplimit["hourly-limit"])
-        self.ratelimit_ipremaining = int(iplimit["remaining-hits"])
-        self.ratelimit_ipreset = datetime.datetime.fromtimestamp(
-            int(iplimit["reset-time-in-seconds"]))
     
     def _api(self, a, b, params = {}, noauth = False, **replace):
         url = self._urlreplace(a, b, replace)
@@ -102,8 +81,7 @@ class api():
         header = data.info()
         self._set_ratelimit(header)
         
-        xml = data.read()
-        return twitterxml.xmlparse(xml)
+        return self._convert(data.read())
     
     def _api_noauth(self, url, params):
         # No use OAuth, GET only
@@ -114,8 +92,7 @@ class api():
         header = data.info()
         self._set_ratelimit_ip(header)
         
-        xml = data.read()
-        return twitterxml.xmlparse(xml)
+        return self._convert(data.read())
     
     def _api_delete(self, a, b, params = {}, **replace):
         url = self._urlreplace(a, b, replace)
@@ -126,7 +103,23 @@ class api():
         conn = self.oauth.oauth_http_request(url, "DELETE", params)
         response = conn.getresponse()
         
-        return twitterxml.xmlparse(response.read())
+        return self._convert(response.read())
+
+    def _convert(self, data):
+        data = json.loads(data)
+
+        if isinstance(data, list):
+            if isinstance(data[0], dict):
+                if "user" in data[0]:
+                    return [status.TwitterStatus(i) for i in data]
+                elif "screen_name" in data[0]:
+                    return [user.TwitterUser(i) for i in data]
+        elif "user" in data:
+            return status.TwitterStatus(data)
+        elif "screen_name" in data:
+            return user.TwitterUser(data)
+        
+        return data
     
     def _set_ratelimit(self, header):
         try:
@@ -136,7 +129,7 @@ class api():
                 int(header["X-RateLimit-Reset"]))
         except KeyError:
             pass
-
+    
     def _set_ratelimit_ip(self, header):
         try:
             self.ratelimit_iplimit = int(header["X-RateLimit-Limit"])
@@ -147,21 +140,24 @@ class api():
             pass
     
     def _rm_noparams(self, params):
-        flg = True
-        while flg:
-            flg = False
-            for p in params:
-                if not params[p]:
-                    del params[p]
-                    flg = True
-                    break
+        rmlist = list()
+        for k, v in params.iteritems():
+            if (not v) and v != 0 and v != False:
+                rmlist.append(k)
+        
+        for k in rmlist: del params[k]
+        
         return params
-
+    
     def _convert_str_params(self, params):
-        for i in params:
-            if isinstance(params[i], unicode):
-                params[i] = str(params[i].encode("utf-8"))
-
+        convlist = list()
+        for k, v in params.iteritems():
+            if isinstance(v, unicode):
+                convlist.append(k)
+        
+        for k in convlist:
+            params[k] = str(params[k].encode("utf-8"))
+        
         return params
     
     def _idtype(self, uid, ret = ("user_id", "screen_name"), 
@@ -198,8 +194,7 @@ class api():
     def friends_timeline(self, **params):
         return self._api("statuses", "friends_timeline", params)
     
-    def user_timeline(self, user = "", is_screen_name = False,
-                      auth = False, **params):
+    def user_timeline(self, user = "", is_screen_name = False, auth = False, **params):
         params[self._idtype(user, is_screen_name = is_screen_name)] = user
         data = self._api("statuses", "user_timeline", params, noauth = not auth)
         return data
@@ -504,13 +499,3 @@ class api():
     #
     def trends_available(self): pass
     def trends_location(self): pass
-
-if __name__ == "__main__":
-    import sys
-
-    api = api(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
-
-    print api.user["screen_name"]
-    for status in api.home_timeline(count = 10):
-        print "%15s: %s" % (
-            status["user"]["screen_name"], status["text"])

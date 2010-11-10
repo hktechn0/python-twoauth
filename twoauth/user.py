@@ -7,7 +7,7 @@
 # - http://www.techno-st.net/wiki/python-twoauth
 #
 #
-# Copyright (c) 2009 Hirotaka Kawata
+# Copyright (c) 2009-2010 Hirotaka Kawata
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,31 +28,53 @@
 # THE SOFTWARE.
 #
 
-import UserDict
-
 from common import twittertime
 import status
 
-class twuser(UserDict.UserDict):
+class TwitterUser(dict):
     def __init__(self, d):
-        user = dict(d)
-        self.data = user
+        self.update(d)
+    
+    @property
+    def id(self): return self.get("id")
+    @property
+    def followers_count(self): return self.get("followers_count")
+    @property
+    def friends_count(self): return self.get("friends_count")
+    @property
+    def favorites_count(self): return self.get("favorites_count")
+    @property
+    def statuses_count(self): return self.get("statuses_count")
+    
+    @property
+    def protected(self): return self.get("protected")
+    
+    @property
+    def following(self): return self.get("following")
+    @following.setter
+    def following(self, value): self["following"] = bool(value)
+    
+    @property
+    def verified(self): return self.get("verified")
+    
+    @property
+    def name(self): return self.get("name")
+    @property
+    def screen_name(self): return self.get("screen_name")
+    @property
+    def location(self): return self.get("location")
+    @property
+    def description(self): return self.get("description")
+    
+    @property
+    def profile_image_url(self): return self.get("profile_image_url")
+    @property
+    def url(self): return self.get("url")
+    @property
+    def time_zone(self): return self.get("time_zone")
+    
+    @property
+    def created_at(self): return twittertime(self.get("created_at"))
         
-        for i in ("id", 
-                  "followers_count", "friends_count", 
-                  "favourites_count", 
-                  "utc_offset", "statuses_count"):
-            setattr(self, i, int(user[i]) if user[i] != None else None)
-        
-        for i in ("protected", "following", "verified"):
-            setattr(self, i,  user[i])
-        
-        for i in ("name", "screen_name", "location",
-                  "description", "profile_image_url",
-                  "url", "time_zone"):
-            setattr(self, i, unicode(user[i]) if user[i] != None else None)
-        
-        self.created_at = twittertime(user["created_at"])
-        
-        if "status" in user.keys():
-            self.status = status.twstatus(user["status"])
+    @property
+    def status(self): return status.TwitterStatus(self.get("status")) if self.get("status") != None else None

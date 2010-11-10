@@ -32,7 +32,6 @@
 
 from api import *
 from oauth import *
-from twitterxml import *
 from common import *
 from status import *
 from user import *

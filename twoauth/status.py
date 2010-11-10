@@ -7,7 +7,7 @@
 # - http://www.techno-st.net/wiki/python-twoauth
 #
 #
-# Copyright (c) 2009 Hirotaka Kawata
+# Copyright (c) 2009-2010 Hirotaka Kawata
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,38 +28,43 @@
 # THE SOFTWARE.
 #
 
-import UserDict
-
 from common import twittersource, twittertime
 import user
 
-class twstatus(UserDict.UserDict):
+class TwitterStatus(dict):
     def __init__(self, d):
-        status = dict(d)
-        self.data = status
-        
-        if "delete" in status: return
-        
-        self.created_at = twittertime(status["created_at"])
-        
-        for i in ("id", "in_reply_to_status_id",
-                  "in_reply_to_user_id"):
-            setattr(self, i, int(status[i]) \
-                        if status[i] != None else None)
-        
-        for i in ("text", "source", "in_reply_to_screen_name"):
-            setattr(self, i, unicode(status[i]) \
-                        if status[i] != None else None)
-        
-        self.source_name = twittersource(self.source)
-        
-        for i in ("favorited", "truncated"):
-            setattr(self, i, status[i])
-        
-        if "user" in status.keys():
-            self.user = user.twuser(status["user"])
+        self.update(d)        
+        self["user"] = user.TwitterUser(self.get("user"))
 
-        if "retweeted_status" in status.keys():
-            self.retweeted_status = twstatus(status["retweeted_status"])
-        else:
-            self.retweeted_status = None
+    @property
+    def favorited(self): return bool(self.get("favorited"))
+    @favorited.setter
+    def favorited(self, value): self["favorited"] = bool(value)
+    
+    @property
+    def created_at(self): return twittertime(self.get("created_at"))
+    
+    @property
+    def text(self): return self.get("text")
+    @property
+    def id(self): return self.get("id")
+    
+    @property
+    def in_reply_to_user_id(self): return self.get("in_reply_to_user_id")
+    @property
+    def in_reply_to_screen_name(self): return self.get("in_reply_to_screen_name")
+    
+    @property
+    def source(self): return self.get("source")
+    @property
+    def source_name(self): return twittersource(self.get("source"))
+    @property
+    def in_reply_to_status_id(self): return self.get("in_reply_to_status_id")
+    
+    @property
+    def retweeted_status(self):
+        rtstatus = self.get("retweeted_status")
+        return TwitterStatus(rtstatus) if rtstatus != None else None
+    
+    @property
+    def user(self): return self.get("user")

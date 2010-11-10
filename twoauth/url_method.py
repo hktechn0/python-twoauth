@@ -31,7 +31,7 @@
 twurl = "http://api.twitter.com/1/"
 #twurl = "http://twitter.com/"
 apiurl = "http://api.twitter.com/1/"
-t = ".xml"
+t = ".json"
 
 # Twitter REST API URLs
 url = {

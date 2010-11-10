@@ -39,7 +39,7 @@ import email.encoders
 
 import oauth
 
-class Twitpic:
+class Twitpic(object):
     host = "api.twitpic.com"
     url = "/2/upload.json"
     verify_credentials_url = "https://api.twitter.com/1/account/verify_credentials.json"
@@ -88,21 +88,3 @@ class Twitpic:
         
         response = c.getresponse().read()
         return json.loads(response)
-
-if __name__ == "__main__":
-    import sys
-    ckey = sys.argv[1]
-    csecret = sys.argv[2]
-    atoken = sys.argv[3]
-    asecret = sys.argv[4]
-    filepath = sys.argv[5]
-    
-    # from python-twoauth
-    apikey = "dcb62be3b2f310d4484f22364c1edd65"
-    
-    oauth = oauth.oauth(ckey, csecret, atoken, asecret)
-
-    twpic = Twitpic(oauth, apikey)
-    ret = twpic.upload(open(filepath, "rb"), "らりるれろ")
-
-    print ret

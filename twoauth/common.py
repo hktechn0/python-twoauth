@@ -28,7 +28,6 @@
 # THE SOFTWARE.
 #
 
-import UserDict
 import time, datetime
 import locale
 
