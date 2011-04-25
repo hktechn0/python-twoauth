@@ -105,21 +105,29 @@ class api(object):
         
         return self._convert(response.read())
 
+    # convrt dict to status or user object
     def _convert(self, data):
         data = json.loads(data)
 
-        if isinstance(data, list):
-            if isinstance(data[0], dict):
-                if "user" in data[0]:
-                    return [status.TwitterStatus(i) for i in data]
-                elif "screen_name" in data[0]:
-                    return [user.TwitterUser(i) for i in data]
-        elif "user" in data:
-            return status.TwitterStatus(data)
-        elif "screen_name" in data:
-            return user.TwitterUser(data)
+        if "__iter__" in dir(data):
+            return self._convert_user_status(data)
+        else:
+            return data
+    
+    def _convert_user_status(self, data):
+        if isinstance(data, dict):
+            if "user" in data and "in_reply_to_screen_name" in data:
+                return status.TwitterStatus(data)
+            elif "screen_name" in data and "profile_image_url" in data:
+                return user.TwitterUser(data)
+            else:
+                for k in data.keys():
+                    if "__iter__" in dir(data[k]):
+                        data[k] = self._convert_user_status(data[k])
+                
+                return data
         
-        return data
+        return [self._convert_user_status(i) if "__iter__" in dir(i) else i for i in data]
     
     def _set_ratelimit(self, header):
         try:
