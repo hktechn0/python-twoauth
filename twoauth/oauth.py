@@ -138,7 +138,7 @@ class oauth(object):
         return sig
     
     # Return Authorization Header String
-    def oauth_header(self, url, method = "GET", params = {}, secret = "", oauth_params = None):
+    def oauth_header(self, url, method = "GET", params = {}, secret = "", oauth_params = None, realm = ""):
         # initialize OAuth parameters if no given oauth_params
         if oauth_params == None:
             oauth_params = self._init_params()
@@ -155,7 +155,12 @@ class oauth(object):
         # quote OAuth format
         plist = ['%s="%s"' % (self._oquote(k), self._oquote(v)) for k, v in oauth_params.iteritems()]
         
-        return "OAuth %s" % (", ".join(plist))
+        if realm:
+            h = 'realm="%s",%s' % (realm, ",".join(plist))
+        else:
+            h = ",".join(plist)
+        
+        return "OAuth %s" % (h)
     
     # Return urllib2.Request Object for OAuth
     def oauth_request(self, url, method = "GET", params = {}):
