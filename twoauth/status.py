@@ -33,9 +33,14 @@ import user
 
 class TwitterStatus(dict):
     def __init__(self, d):
-        self.update(d)        
+        self.update(d)
         self["user"] = user.TwitterUser(self.get("user"))
-
+        self["entities"] = TwitterDict(self.get("entities", dict()))
+        
+        rtstatus = self.get("retweeted_status")
+        if rtstatus:
+            self["retweeted_status"] = TwitterStatus(rtstatus)
+    
     @property
     def favorited(self): return bool(self.get("favorited"))
     @favorited.setter
@@ -62,9 +67,22 @@ class TwitterStatus(dict):
     def in_reply_to_status_id(self): return self.get("in_reply_to_status_id")
     
     @property
-    def retweeted_status(self):
-        rtstatus = self.get("retweeted_status")
-        return TwitterStatus(rtstatus) if rtstatus != None else None
+    def retweeted_status(self): return self.get("retweeted_status")
     
     @property
     def user(self): return self.get("user")
+    
+    @property
+    def entities(self): return self.get("entities")
+
+class TwitterDict(dict):
+    def __init__(self, d):
+        self.update(d)
+        
+        for key, value in d.iteritems():
+            if isinstance(value, dict):
+                value = TwitterDict(value)
+            elif isinstance(value, list):
+                value = [(TwitterDict(i) if isinstance(i, dict) else i) for i in value]
+            
+            setattr(self, key, value)
