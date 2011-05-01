@@ -35,10 +35,7 @@ class TwitterStatus(dict):
     def __init__(self, d):
         self.update(d)
         self["user"] = user.TwitterUser(self.get("user"))
-
-        entities = self.get("entities")
-        if entities:
-            self["entities"] = TwitterDict(entities)
+        self["entities"] = TwitterDict(self.get("entities", dict()))
         
         rtstatus = self.get("retweeted_status")
         if rtstatus:
