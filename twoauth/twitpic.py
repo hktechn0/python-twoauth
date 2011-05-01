@@ -48,9 +48,11 @@ class Twitpic(object):
         self.oauth = oauth
         self.apikey = apikey
     
-    def upload(self, image, message = ""):        
+    def upload(self, filename, message = ""):        
         # img
+        image = open(filename)
         imgdata = image.read()
+        image.close()
         mimeimg = email.mime.image.MIMEImage(imgdata, _encoder = email.encoders.encode_noop)
         mimeimg.add_header("Content-Disposition", "form-data", name = "media", filename = "image")
         mimeimg.add_header("Content-Length", str(len(imgdata)))
@@ -70,23 +72,23 @@ class Twitpic(object):
         data.attach(mimeimg)
         
         multipart = data.as_string()
+        boundary = data.get_boundary()
         ctype, multipart = multipart.split("\n\n", 1)
         
         c = httplib.HTTPConnection(self.host)
         c.putrequest("POST", self.url)
+        
+        c.putheader("Content-Length", str(len(multipart)))
+        c.putheader("Content-Type", 
+                    'multipart/form-data; boundary="%s"' % boundary)
         
         oauth_header = self.oauth.oauth_header(
             self.verify_credentials_url, 
             secret = self.oauth.asecret,
             realm = "http://api.twitter.com/")
         
-        c.putheader("X-Verify-Credentials-Authorization",
-                    oauth_header)
-        c.putheader("X-Auth-Service-Provider",
-                    self.verify_credentials_url)
-        
-        c.putheader("Content-Length", str(len(multipart)))
-        c.putheader("Content-Type", ctype.split(": ", 1)[-1])
+        c.putheader("X-Auth-Service-Provider", self.verify_credentials_url)
+        c.putheader("X-Verify-Credentials-Authorization", oauth_header)
         
         c.endheaders()
         c.send(multipart)
