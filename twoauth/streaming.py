@@ -9,6 +9,7 @@ import threading
 
 import oauth
 import status
+import event
 
 # Streaming API Stream class
 class Stream(threading.Thread):
@@ -49,13 +50,8 @@ class Stream(threading.Thread):
             
             if bytes == None:
                 if self.die: break
-                
                 # Reconnect
-                while False:
-                    try: self._hose = urllib2.urlopen(self.request)
-                    except urllib2.HTTPError, e:
-                        if e.code == 401: continue
-                        else: raise
+                self._hose = urllib2.urlopen(self.request)
             
             # read stream
             self._lock.acquire()
@@ -85,11 +81,20 @@ class Stream(threading.Thread):
     
     # pop statuses
     def pop(self):
-        data = self.read()
-        if data == None: return []
+        text = self.read()
+        if not text: return []
         
-        return [status.TwitterStatus(i) if "text" in i.keys() else i
-                for i in map(json.loads, data.strip().split("\n"))]
+        statuses = []
+        
+        for i in map(json.loads, text.strip().split("\n")):
+            if "text" in i:
+                i = status.TwitterStatus(i) 
+            elif "event" in i:
+                i = event.TwitterEvent(i)
+            
+            statuses.append(i)
+        
+        return statuses
     
     def stop(self):
         self.die = True

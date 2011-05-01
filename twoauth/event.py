@@ -2,12 +2,12 @@
 #-*- coding: utf-8 -*-
 #
 #
-# python-twoauth [__init__.py]
+# python-twoauth [event.py]
 # - Hirotaka Kawata <info@techno-st.net>
 # - http://www.techno-st.net/wiki/python-twoauth
 #
 #
-# Copyright (c) 2009 Hirotaka Kawata
+# Copyright (c) 2009-2011 Hirotaka Kawata
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,32 @@
 # THE SOFTWARE.
 #
 
-# OAuth supported Twitter API Library
+from common import twittersource, twittertime
+import user
+import status
 
-from api import *
-from oauth import *
-from common import *
-from status import *
-from user import *
-from event import *
+class TwitterEvent(dict):
+    def __init__(self, d):
+        self.update(d)
+        self["target"] = user.TwitterUser(d.get("target"))
+        self["source"] = user.TwitterUser(d.get("source"))
+        
+        if "target_object" in d:
+            self["target_object"] = status.TwitterStatus(d.get("target_object"))
+    
+    @property
+    def target(self): return self["target"]
+    
+    @property
+    def source(self): return self["source"]
+    
+    @property
+    def target_object(self): return self.get("target_object")
 
-__version__ = "0.2.0"
-__author__ = "Hirotaka Kawata <info@techno-st.net>"
-__url__ = "http://www.techno-st.net/wiki/python-twoauth"
-__license__ = "MIT License"
+    @property
+    def created_at(self): return twittertime(self.get("created_at"))
+    
+    @property
+    def event(self): return self.get("event")
+    @property
+    def type(self): return self.get("event")
