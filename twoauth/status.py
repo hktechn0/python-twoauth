@@ -45,6 +45,11 @@ class TwitterStatus(dict):
     def favorited(self): return bool(self.get("favorited"))
     @favorited.setter
     def favorited(self, value): self["favorited"] = bool(value)
+
+    @property
+    def retweeted(self): return bool(self.get("retweeted"))
+    @retweeted.setter
+    def retweeted(self, value): self["retweeted"] = bool(value)
     
     @property
     def created_at(self): return twittertime(self.get("created_at"))
