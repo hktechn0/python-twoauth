@@ -36,6 +36,8 @@ class TwitterStatus(dict):
         self.update(d)
         self["user"] = user.TwitterUser(self.get("user"))
         self["entities"] = TwitterDict(self.get("entities", dict()))
+        self["geo"] = TwitterDict(self.get("geo", dict()))
+        self["place"] = TwitterDict(self.get("place", dict()))
         
         rtstatus = self.get("retweeted_status")
         if rtstatus:
@@ -45,7 +47,7 @@ class TwitterStatus(dict):
     def favorited(self): return bool(self.get("favorited"))
     @favorited.setter
     def favorited(self, value): self["favorited"] = bool(value)
-
+    
     @property
     def retweeted(self): return bool(self.get("retweeted"))
     @retweeted.setter
@@ -80,8 +82,14 @@ class TwitterStatus(dict):
     @property
     def entities(self): return self.get("entities")
 
+    @property
+    def place(self): return self.get("place")
+    @property
+    def geo(self): return self.get("geo")
+
 class TwitterDict(dict):
     def __init__(self, d):
+        if d == None: d = dict()
         self.update(d)
         
         for key, value in d.iteritems():
