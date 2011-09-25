@@ -42,7 +42,7 @@ class TwitterUser(dict):
     @property
     def friends_count(self): return self.get("friends_count")
     @property
-    def favorites_count(self): return self.get("favorites_count")
+    def favourites_count(self): return self.get("favourites_count")
     @property
     def statuses_count(self): return self.get("statuses_count")
     
