@@ -78,6 +78,8 @@ url = {
             twurl + "users/lookup" + t,
         "search" :
             apiurl + "users/search" + t,
+        "profile_image" :
+            apiurl + "users/profile_image/${user}" + t,
         "suggestions" :
             apiurl + "users/suggestions" + t,
         "suggestions_cat" :

@@ -30,15 +30,15 @@ class Stream(threading.Thread):
         #    delimited = hose.readline().strip()
         
         delimited = unicode()
+        c = unicode()
         
         # get delimited (number of bytes that should be read
         while not (delimited != "" and c == "\n"):
-            c = self._hose.read(1)                
+            c = self._hose.read(1)
             delimited += c.strip()
             
-            # broken streaming hose or destroy
-            if c == "" or self.die:
-                return
+            # destroy
+            if self.die: return
         
         return int(delimited)
     
@@ -46,16 +46,16 @@ class Stream(threading.Thread):
         self._hose = urllib2.urlopen(self.request)
         
         while not self.die:
-            bytes = self._get_delimited()
+            read_bytes = self._get_delimited()
             
-            if bytes == None:
+            if read_bytes == None:
                 if self.die: break
                 # Reconnect
                 self._hose = urllib2.urlopen(self.request)
             
             # read stream
             self._lock.acquire()
-            self._buffer += self._hose.read(bytes)
+            self._buffer += self._hose.read(read_bytes)
             self._lock.release()
             
             self.event.set()
@@ -88,7 +88,7 @@ class Stream(threading.Thread):
         
         for i in map(json.loads, text.strip().split("\n")):
             if "text" in i:
-                i = status.TwitterStatus(i) 
+                i = status.TwitterStatus(i)
             elif "event" in i:
                 i = event.TwitterEvent(i)
             

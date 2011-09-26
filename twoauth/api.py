@@ -177,7 +177,7 @@ class api(object):
             # screen_name
             return ret[1]
 
-    def _urlreplace(self, a, b, replace):
+    def _urlreplace(self, a, b, replace = {}):
         url = self.url[a][b]
         
         # if user not in replace list, add auth user
@@ -199,8 +199,8 @@ class api(object):
     def home_timeline(self, **params):
         return self._api("statuses", "home_timeline", params)
     
-    def friends_timeline(self, **params):
-        return self._api("statuses", "friends_timeline", params)
+    #def friends_timeline(self, **params):
+    #    return self._api("statuses", "friends_timeline", params)
     
     def user_timeline(self, user = "", is_screen_name = False, auth = False, **params):
         params[self._idtype(user, is_screen_name = is_screen_name)] = user
@@ -210,21 +210,21 @@ class api(object):
     def mentions(self, **params):
         return self._api("statuses", "mentions", params)
     
-    def rt_by_me(self, **params):
-        print >>sys.stderr, "[warning] Deprecated method: rt_by_me => retweeted_by_me"
-        self.retweeted_by_me(**params)
+    #def rt_by_me(self, **params):
+    #    print >>sys.stderr, "[warning] Deprecated method: rt_by_me => retweeted_by_me"
+    #    self.retweeted_by_me(**params)
     def retweeted_by_me(self, **params):
         return self._api("statuses", "retweeted_by_me", params)
     
-    def rt_to_me(self, **params):
-        print >>sys.stderr, "[warning] Deprecated method: rt_to_me => retweeted_to_me"
-        self.retweeted_to_me(**params)
+    #def rt_to_me(self, **params):
+    #    print >>sys.stderr, "[warning] Deprecated method: rt_to_me => retweeted_to_me"
+    #    self.retweeted_to_me(**params)
     def retweeted_to_me(self, **params):
         return self._api("statuses", "retweeted_to_me", params)
     
-    def rt_of_me(self, **params):
-        print >>sys.stderr, "[warning] Deprecated method: rt_of_me => retweets_of_me"
-        self.retweets_of_me(**params)
+    #def rt_of_me(self, **params):
+    #    print >>sys.stderr, "[warning] Deprecated method: rt_of_me => retweets_of_me"
+    #    self.retweets_of_me(**params)
     def retweets_of_me(self, **params):
         return self._api("statuses", "retweets_of_me", params)
     
@@ -259,7 +259,7 @@ class api(object):
     def user_show(self, user, is_screen_name = False, auth = False, **params):
         params[self._idtype(user, is_screen_name = is_screen_name)] = user
         return self._api("users", "show", params, noauth = not auth)
-
+    
     def user_lookup(self, user_id = [], screen_name = [], **params):
         params["user_id"] = ",".join(user_id)
         params["screen_name"] = ",".join(user_id)
@@ -269,23 +269,29 @@ class api(object):
         params["q"] = q
         return self._api("users", "search", params)
     
+    def user_profile_image(self, user, **params):
+        url = self._urlreplace("users", "profile_image", {"user" : user})
+        paramstr = urllib.urlencode(params)
+        data = urllib2.urlopen("%s?%s" % (url, paramstr))
+        return data.read()
+    
     def users_suggestions(self, **params):
         return self._api("users", "suggestions", params)
-
+    
     def users_suggestions_category(self, category, **params):
         return self._api("users", "suggestions_cat", params, slug = category)
-
-    def status_friends(self, *a, **b):
-        self.friends(*a, **b)
-    def friends(self, user = "", is_screen_name = False, **params):
-        params[self._idtype(user, is_screen_name = is_screen_name)] = user
-        return self._api("statuses", "friends", params)
     
-    def status_followers(self, *a, **b):
-        self.friends(*a, **b)
-    def followers(self, user = "", is_screen_name = False, **params):
-        params[self._idtype(user, is_screen_name = is_screen_name)] = user
-        return self._api("statuses", "followers", params)
+    #def status_friends(self, *a, **b):
+    #    self.friends(*a, **b)
+    #def friends(self, user = "", is_screen_name = False, **params):
+    #    params[self._idtype(user, is_screen_name = is_screen_name)] = user
+    #    return self._api("statuses", "friends", params)
+    
+    #def status_followers(self, *a, **b):
+    #    self.friends(*a, **b)
+    #def followers(self, user = "", is_screen_name = False, **params):
+    #    params[self._idtype(user, is_screen_name = is_screen_name)] = user
+    #    return self._api("statuses", "followers", params)
     
     #
     # Lists Methods
@@ -441,7 +447,7 @@ class api(object):
     def profile_image(self, image, **params):
         params["image"] = image
         return self._api("account", "profile_image", params)
-
+    
     def profile_background_image(self, image, **params):
         params["image"] = image
         return self._api("account", "profile_back", params)
