@@ -72,26 +72,32 @@ class api(object):
             try:
                 return self._api_noauth(url, params)
             except urllib2.HTTPError, e:
-                if e.code in (401, 403): pass
-                else:                    raise
+                # rate_limit, authorize, forbidden
+                if e.code in (400, 401, 403): pass
+                else:                         raise
         
         req = self.oauth.oauth_request(url, method, params)
-        data = urllib2.urlopen(req)
         
-        header = data.info()
-        self._set_ratelimit(header)
+        try:
+            data = urllib2.urlopen(req)
+        except urllib2.HTTPError, e:
+            self._set_ratelimit(e.info())
+            raise
         
+        self._set_ratelimit(data.info())
         return self._convert(data.read())
     
     def _api_noauth(self, url, params):
         # No use OAuth, GET only
         paramstr = urllib.urlencode(params)
         
-        data = urllib2.urlopen("%s?%s" % (url, paramstr))
+        try:
+            data = urllib2.urlopen("%s?%s" % (url, paramstr))
+        except urllib2.HTTPError, e:
+            self._set_ratelimit_ip(e.info())
+            raise
         
-        header = data.info()
-        self._set_ratelimit_ip(header)
-        
+        self._set_ratelimit_ip(data.info())
         return self._convert(data.read())
     
     def _api_delete(self, a, b, params = {}, **replace):
