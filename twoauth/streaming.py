@@ -34,8 +34,11 @@ class Stream(threading.Thread):
         
         # get delimited (number of bytes that should be read
         while not (delimited != "" and c == "\n"):
-            c = self._hose.read(1)
-            delimited += c.strip()
+            try:
+                c = self._hose.read(1)
+                delimited += c.strip()
+            except:
+                return None
             
             # destroy
             if self.die: return
