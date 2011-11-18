@@ -127,9 +127,9 @@ class api(object):
             elif "screen_name" in data and "profile_image_url" in data:
                 return user.TwitterUser(data)
             else:
-                for k in data.keys():
-                    if "__iter__" in dir(data[k]):
-                        data[k] = self._convert_user_status(data[k])
+                for k, v in data.items():
+                    if "__iter__" in dir(v):
+                        data[k] = self._convert_user_status(v)
                 
                 return data
         
