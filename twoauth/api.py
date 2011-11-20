@@ -32,9 +32,20 @@
 
 import sys
 import urllib, urllib2
+import httplib
+import urlparse
 import string
 import datetime
 import json
+import email
+import email.mime.image
+import email.mime.multipart
+import email.mime.text
+import email.encoders
+import email.generator
+import email.quoprimime
+import os.path
+
 import oauth
 import status, user
 
@@ -110,8 +121,58 @@ class api(object):
         response = conn.getresponse()
         
         return self._convert(response.read())
-
-    # convrt dict to status or user object
+    
+    def _api_multipart(self, a, b, mime):
+        url = self._urlreplace(a, b)
+        purl = urlparse.urlparse(url)
+        
+        data = email.mime.multipart.MIMEMultipart("form-data")
+        for m in mime:
+            data.attach(m)
+        
+        multipart = data.as_string()
+        boundary = data.get_boundary()
+        ctype, multipart = multipart.split("\n\n", 1)
+        
+        if purl.scheme == "https":
+            c = httplib.HTTPSConnection(purl.hostname)
+        else:
+            c = httplib.HTTPConnection(purl.hostname)
+        
+        oauth_header = self.oauth.oauth_header(
+            url, "POST", secret = self.oauth.asecret)
+        
+        # multipart/form-data: \n -> \r\n
+        multipart_data = list()
+        multipart_data.append("--" + boundary)
+        for m in multipart.split("--" + boundary):
+            if m == "" or m == "--":
+                continue
+            
+            header, body = m.split("\n\n", 1)
+            
+            for h in header.strip().split("\n"):
+                multipart_data.append(h.strip())
+            
+            multipart_data.append("")
+            multipart_data.append(body[:-1])
+            multipart_data.append("--" + boundary)
+        multipart_data[-1] += "--"
+        
+        multipart = "\r\n".join(multipart_data)
+        
+        c.putrequest("POST", purl.path)        
+        c.putheader("Authorization", oauth_header)
+        c.putheader("Content-Length", str(len(multipart)))
+        c.putheader("Content-Type", 
+                    'multipart/form-data; boundary="%s"' % boundary)
+        c.endheaders()
+        c.send(multipart)
+        
+        response = c.getresponse().read()
+        return self._convert(response)
+    
+    # convert dict to status or user object
     def _convert(self, data):
         data = json.loads(data)
 
@@ -243,6 +304,33 @@ class api(object):
     def status_update(self, status, **params):
         params["status"] = status
         return self._api("statuses", "update", params)
+    
+    # media[]: image path
+    def status_update_with_media(self, status, media, **params):
+        if not(isinstance(media, list) or isinstance(media, tuple)):
+            media = [media]
+        
+        mime = list()
+        
+        for i in media:
+            imgdata = open(i).read()
+            mimeimg = email.mime.image.MIMEImage(
+                imgdata, _encoder = email.encoders.encode_noop)
+            mimeimg.add_header(
+                "Content-Disposition", "form-data", 
+                name = "media[]", filename = os.path.basename(i))
+            mimeimg.add_header("Content-Length", str(len(imgdata)))
+            mime.append(mimeimg)
+        
+        params["status"] = status
+        
+        for k, v in params.iteritems():
+            mimemsg = email.mime.text.MIMEText(v)
+            mimemsg.set_charset("utf-8")
+            mimemsg.add_header("Content-Disposition", "form-data", name = k)
+            mime.append(mimemsg)
+        
+        return self._api_multipart("statuses", "update_with_media", mime)
     
     def status_destroy(self, _id, **params):
         return self._api("statuses", "destroy", params, id = long(_id))

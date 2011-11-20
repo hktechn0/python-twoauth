@@ -28,9 +28,12 @@
 # THE SOFTWARE.
 #
 
-twurl = "http://api.twitter.com/1/"
-#twurl = "http://twitter.com/"
-apiurl = "http://api.twitter.com/1/"
+protocol = "http"
+protocol_https = "https"
+twurl = protocol + "://api.twitter.com/1/"
+#twurl = protocol + "://twitter.com/"
+apiurl = protocol + "://api.twitter.com/1/"
+uploadurl = protocol_https + "://upload.twitter.com/1/"
 t = ".json"
 
 # Twitter REST API URLs
@@ -56,6 +59,8 @@ url = {
             twurl + "statuses/show/${id}" + t,
         "update" :
             twurl + "statuses/update" + t,
+        "update_with_media":
+            uploadurl + "statuses/update_with_media" + t,
         "destroy" :
             twurl + "statuses/destroy/${id}" + t,
         "retweet" :

@@ -28,6 +28,9 @@
 # THE SOFTWARE.
 #
 
+# DEPRECATED: Twitpic module will be deleted in the near future.
+#             We recommend you to use "update_with_media" method.
+
 # Twitpic API v2 wrapper methods
 
 import httplib
