@@ -192,6 +192,10 @@ url = {
         "report_spam" :
             apiurl + "report_spam" + t,
         },
+    "help" : {
+        "configuration" :
+            apiurl + "help/configuration" + t,
+        }
     }
 
 # Twitter REST API Methods
@@ -207,6 +211,7 @@ method = {
         "retweets_of_me"   : "GET",
         "show"             : "GET",
         "update"           : "POST",
+        "update_with_media": "POST",
         "destroy"          : "POST",
         "retweet"          : "POST",
         "retweets"         : "GET",
@@ -279,4 +284,7 @@ method = {
         "blockids" : "GET",
         "report_spam" : "POST",
         },
+    "help" : {
+        "configuration" : "GET",
+        }
     }

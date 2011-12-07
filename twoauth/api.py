@@ -607,3 +607,9 @@ class api(object):
     #
     def trends_available(self): pass
     def trends_location(self): pass
+
+    #
+    # Help Methods
+    #
+    def help_configuration(self, **params):
+        return self._api("help", "configuration", params)
