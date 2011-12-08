@@ -46,7 +46,11 @@ class Stream(threading.Thread):
         return int(delimited)
     
     def run(self):
-        self._hose = urllib2.urlopen(self.request)
+        try:
+            self._hose = urllib2.urlopen(self.request)
+        except:
+            self.die = True
+            return
         
         while not self.die:
             read_bytes = self._get_delimited()
