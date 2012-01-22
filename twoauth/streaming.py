@@ -24,6 +24,10 @@ class Stream(threading.Thread):
         self.event = threading.Event()
         self.die = False
     
+    @property
+    def is_connected(self):
+        return bool(self._hose) and bool(self._hose.fp)
+    
     def _get_delimited(self):
         # tooooooooo slow (maybe readline() has big buffer)
         # while delimited == "":
@@ -34,13 +38,11 @@ class Stream(threading.Thread):
         
         # get delimited (number of bytes that should be read
         while not (delimited != "" and c == "\n"):
-            try:
-                c = self._hose.read(1)
-                print "ord:", hex(ord(c))
-                delimited += c.strip()
-            except Exception, e:
-                print "[Error streaming]:", e # debug
-                return None
+            c = self._hose.read(1)
+            delimited += c.strip()
+            
+            # EOF (disconnected)
+            if not c: return
             
             # destroy
             if self.die: return
@@ -51,16 +53,21 @@ class Stream(threading.Thread):
         try:
             self._hose = urllib2.urlopen(self.request)
         except:
-            self.die = True
-            return
+            raise
+        
+        # clear buffer
+        self.event.clear()
+        self._lock.acquire()
+        self._buffer = unicode()
+        self._lock.release()
         
         while not self.die:
             read_bytes = self._get_delimited()
+            if self.die: break
             
+            # maybe stream disconnected
             if read_bytes == None:
-                if self.die: break
-                # Reconnect
-                # self._hose = urllib2.urlopen(self.request)
+                break
             
             # read stream
             self._lock.acquire()
@@ -68,10 +75,10 @@ class Stream(threading.Thread):
             self._lock.release()
             
             self.event.set()
-            self.event.clear()
         
         # connection close before finish thread
         self._hose.close()
+        self.event.set()
     
     def read(self):
         json_str = None
@@ -90,6 +97,8 @@ class Stream(threading.Thread):
     
     # pop statuses
     def pop(self):
+        self.event.clear()
+        
         text = self.read()
         if not text: return []
         
