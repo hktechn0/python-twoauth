@@ -36,8 +36,10 @@ class Stream(threading.Thread):
         while not (delimited != "" and c == "\n"):
             try:
                 c = self._hose.read(1)
+                print "ord:", hex(ord(c))
                 delimited += c.strip()
-            except:
+            except Exception, e:
+                print "[Error streaming]:", e # debug
                 return None
             
             # destroy
@@ -58,7 +60,7 @@ class Stream(threading.Thread):
             if read_bytes == None:
                 if self.die: break
                 # Reconnect
-                self._hose = urllib2.urlopen(self.request)
+                # self._hose = urllib2.urlopen(self.request)
             
             # read stream
             self._lock.acquire()
