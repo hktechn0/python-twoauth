@@ -11,6 +11,8 @@ import oauth
 import status
 import event
 
+from __init__ import __version__
+
 # Streaming API Stream class
 class Stream(threading.Thread):
     def __init__(self, request):
@@ -38,12 +40,14 @@ class Stream(threading.Thread):
         
         # get delimited (number of bytes that should be read
         while not (delimited != "" and c == "\n"):
-            c = self._hose.read(1)
-            delimited += c.strip()
+            try:
+                c = self._hose.read(1)
+                delimited += c.strip()
+            except:
+                c = None
             
             # EOF (disconnected)
             if not c: return
-            
             # destroy
             if self.die: return
         
@@ -53,13 +57,8 @@ class Stream(threading.Thread):
         try:
             self._hose = urllib2.urlopen(self.request)
         except:
-            raise
-        
-        # clear buffer
-        self.event.clear()
-        self._lock.acquire()
-        self._buffer = unicode()
-        self._lock.release()
+            self.event.set()
+            return
         
         while not self.die:
             read_bytes = self._get_delimited()
@@ -119,22 +118,30 @@ class Stream(threading.Thread):
 
 # Streaming API class
 class StreamingAPI(object):
-    def __init__(self, oauth):
+    useragent = "python-twoauth v%s" % (__version__)
+    
+    def __init__(self, oauth, useragent = None):
         self.oauth = oauth
+        
+        if not useragent:
+            self.useragent = useragent
     
     def _request(self, path, method = "GET", params = {}):    
         # added delimited parameter
         params["delimited"] = "length"
         req = self.oauth.oauth_request(path, method, params)
         
+        # User Agent Header
+        req.add_header("X-User-Agent", self.useragent)
+        
         return req
     
     def sample(self):
-        path = "http://stream.twitter.com/1/statuses/sample.json"
+        path = "https://stream.twitter.com/1/statuses/sample.json"
         return Stream(self._request(path))
     
     def filter(self, follow = [], locations = [], track = []):
-        path = "http://stream.twitter.com/1/statuses/filter.json"
+        path = "https://stream.twitter.com/1/statuses/filter.json"
         
         params = dict()
         if follow:
