@@ -127,8 +127,9 @@ class StreamingAPI(object):
             self.useragent = useragent
     
     def _request(self, path, method = "GET", params = {}):    
-        # added delimited parameter
+        # added delimited, stall_warnings parameter
         params["delimited"] = "length"
+        params["stall_warnings"] = True
         req = self.oauth.oauth_request(path, method, params)
         
         # User Agent Header
