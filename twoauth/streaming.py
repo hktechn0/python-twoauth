@@ -142,14 +142,15 @@ class StreamingAPI(object):
     
     def filter(self, follow = [], locations = [], track = []):
         path = "https://stream.twitter.com/1/statuses/filter.json"
-        
         params = dict()
+
+        # Parameters are logical OR
         if follow:
-            params["follow"] = urllib.quote(u",".join([unicode(i) for i in follow]).encode("utf-8"), ",")
+            params["follow"] = u",".join([str(int(i)) for i in follow])
         if locations:
-            params["locations"] = urllib.quote(u",".join([unicode(i) for i in locations]).encode("utf-8"), ",")
+            params["locations"] = u",".join([str(float(i)) for i in locations])
         if track:
-            params["track"] = urllib.quote(u",".join([unicode(i) for i in track]).encode("utf-8"), ",")
+            params["track"] = u",".join([unicode(i).strip() for i in track]).encode("utf-8")
         
         return Stream(self._request(path, "POST", params))
     
