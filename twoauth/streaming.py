@@ -137,14 +137,9 @@ class StreamingAPI(object):
         
         return req
     
-    def sample(self):
-        path = "https://stream.twitter.com/1/statuses/sample.json"
-        return Stream(self._request(path))
-    
-    def filter(self, follow = [], locations = [], track = []):
-        path = "https://stream.twitter.com/1/statuses/filter.json"
+    def _params(self, follow, locations, track):
         params = dict()
-
+        
         # Parameters are logical OR
         if follow:
             params["follow"] = u",".join([str(int(i)) for i in follow])
@@ -153,8 +148,23 @@ class StreamingAPI(object):
         if track:
             params["track"] = u",".join([unicode(i).strip() for i in track]).encode("utf-8")
         
-        return Stream(self._request(path, "POST", params))
+        return params
     
-    def user(self, **params):
+    def sample(self):
+        path = "https://stream.twitter.com/1/statuses/sample.json"
+        return Stream(self._request(path))
+    
+    def filter(self, follow = [], locations = [], track = [], **params):
+        path = "https://stream.twitter.com/1/statuses/filter.json"
+        p = self._params(follow, locations, track)
+        p.update(params)
+        
+        return Stream(self._request(path, "POST", p))
+    
+    def user(self, follow = [], locations = [], track = [], **params):
         path = "https://userstream.twitter.com/2/user.json"
-        return Stream(self._request(path, params = params))
+        p = self._params(follow, locations, track)
+        #p["with"] = params.get("with_", dict())
+        p.update(params)
+        
+        return Stream(self._request(path, "POST", p))
