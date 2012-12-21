@@ -48,7 +48,9 @@ class oauth(object):
         # Request Token URL
         self.reqt_url = site + 'oauth/request_token'
         # Authorize URL
-        self.auth_url = site + 'oauth/authorize'
+        self.authorize_url = site + 'oauth/authorize'
+        # Authenticate URL
+        self.authenticate_url = site + 'oauth/authenticate'
         # Access Token URL
         self.acct_url = site + 'oauth/access_token'
 
@@ -63,17 +65,23 @@ class oauth(object):
         random.seed()
     
     # Get Request Token
-    def request_token(self):
+    def request_token(self, callback_url = ""):
         # initialize OAuth parameters
         oauth_params = self._init_params()
         del oauth_params["oauth_token"]
+
+        if callback_url != "":
+            params = {"oauth_callback": urllib.quote_plus(oauth_callback)}
+            params = urllib.urlencode(params)
+        else:
+            params = None
         
         # get OAuth header
         auth_header = self.oauth_header(self.reqt_url,
                                         oauth_params = oauth_params)
         
         # send request
-        req = urllib2.Request(self.reqt_url)
+        req = urllib2.Request(self.reqt_url, params)
         req.add_header("Authorization", auth_header)
         resp = urllib2.urlopen(req)
         
@@ -87,7 +95,12 @@ class oauth(object):
     # Get Authorize URL
     def authorize_url(self, token_info):
         return "%s?%s=%s" % (
-            self.auth_url, "oauth_token", token_info["oauth_token"])
+            self.authorize_url, "oauth_token", token_info["oauth_token"])
+
+    # Get Authenticate URL
+    def authenticate_url(self, token_info):
+        return "%s?%s=%s" % (
+            self.authenticate_url, "oauth_token", token_info["oauth_token"])
     
     # Get Access Token
     def access_token(self, token_info, pin):
