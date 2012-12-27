@@ -65,17 +65,14 @@ class oauth(object):
         random.seed()
     
     # Get Request Token
-    def request_token(self, callback_url = ""):
+    def request_token(self, callback_url = None):
         # initialize OAuth parameters
         oauth_params = self._init_params()
         del oauth_params["oauth_token"]
 
-        if callback_url != "":
-            params = {"oauth_callback": urllib.quote_plus(callback_url)}
-            params = urllib.urlencode(params)
-        else:
-            params = None
-        
+        if callback_url:
+            oauth_params["oauth_callback"] = urllib.quote_plus(callback_url)
+
         # get OAuth header
         auth_header = self.oauth_header(self._reqt_url,
                                         oauth_params = oauth_params)
