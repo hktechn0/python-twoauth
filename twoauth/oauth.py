@@ -44,7 +44,7 @@ class oauth(object):
     _randchars = string.ascii_letters + string.digits
     
     def __init__(self, ckey, csecret, atoken = "", asecret = "",
-                 site = "https://twitter.com/"):
+                 site = "https://api.twitter.com/"):
         # Request Token URL
         self._reqt_url = site + 'oauth/request_token'
         # Authorize URL
@@ -71,24 +71,25 @@ class oauth(object):
         del oauth_params["oauth_token"]
 
         if callback_url:
-            oauth_params["oauth_callback"] = urllib.quote_plus(callback_url)
+            # add callback
+            oauth_params["oauth_callback"] = callback_url
 
         # get OAuth header
-        auth_header = self.oauth_header(self._reqt_url,
-                                        oauth_params = oauth_params)
-        
+        auth_header = self.oauth_header(
+            self._reqt_url, oauth_params = oauth_params)
+
         # send request
         req = urllib2.Request(self._reqt_url)
         req.add_header("Authorization", auth_header)
         resp = urllib2.urlopen(req)
-        
+
         # Parse Token Parameters
         token_info = cgi.parse_qs(resp.read())
         for p in token_info.keys():
             token_info[p] = token_info[p][0]
         
         return token_info
-    
+
     # Get Authorize URL
     def authorize_url(self, token_info):
         return "%s?%s=%s" % (
@@ -148,27 +149,30 @@ class oauth(object):
         return sig
     
     # Return Authorization Header String
-    def oauth_header(self, url, method = "GET", params = {}, secret = "", oauth_params = None, realm = ""):
+    def oauth_header(self, url, method = "GET", params = {},
+                     secret = "", oauth_params = None, realm = ""):
         # initialize OAuth parameters if no given oauth_params
         if oauth_params == None:
             oauth_params = self._init_params()
         
+        # Encode oatuh_params for OAuth format
+        values = map(self._oquote, oauth_params.itervalues())
+        enc_oauth_params = dict(zip(oauth_params.keys(), values))
+
         # Encode params for OAuth format
         keys = map(self._oquote, params.iterkeys())
         values = map(self._oquote, params.itervalues())
         enc_params = dict(zip(keys, values))
         
         # get oauth_signature
-        sig = self.oauth_signature(url, method, secret, oauth_params, enc_params)
+        sig = self.oauth_signature(url, method, secret, enc_oauth_params, enc_params)
         oauth_params["oauth_signature"] = sig
-        
+
         # quote OAuth format
-        plist = ['%s="%s"' % (self._oquote(k), self._oquote(v)) for k, v in oauth_params.iteritems()]
+        plist = ['%s="%s"' % (self._oquote(k), self._oquote(v))
+                 for k, v in oauth_params.iteritems()]
         
-        if realm:
-            h = 'realm="%s",%s' % (realm, ",".join(plist))
-        else:
-            h = ",".join(plist)
+        h = 'realm="%s",%s' % (realm, ",".join(plist))
         
         return "OAuth %s" % (h)
     
