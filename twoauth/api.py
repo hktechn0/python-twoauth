@@ -48,19 +48,19 @@ import os.path
 
 import oauth
 import status, user
+import url_method
 
 class api(object):
-    # url, method
-    from url_method import url, method
-    
     def __init__(self, ckey, csecret, atoken, asecret,
-                 screen_name = "", oauth_obj = None):
+                 screen_name = "", oauth_obj = None, is_ssl = True):
         # Oauth init
         if oauth_obj == None:
             self.oauth = oauth.oauth(ckey, csecret, atoken, asecret)
         else:
             self.oauth = oauth_obj
         
+        self._url = url_method.TwitterURL(is_ssl)
+
         self.user = { "screen_name" : screen_name }
         
         # ratelimit var init
@@ -74,7 +74,7 @@ class api(object):
     
     def _api(self, a, b, params = {}, noauth = False, **replace):
         url = self._urlreplace(a, b, replace)
-        method = self.method[a][b]
+        method = self._url.method[a][b]
         params = self._rm_noparams(params)
         params = self._convert_str_params(params)
         
@@ -135,9 +135,9 @@ class api(object):
         ctype, multipart = multipart.split("\n\n", 1)
         
         if purl.scheme == "https":
-            c = httplib.HTTPSConnection(purl.hostname)
+            c = httplib.HTTPSConnection(purl.netloc)
         else:
-            c = httplib.HTTPConnection(purl.hostname)
+            c = httplib.HTTPConnection(purl.netloc)
         
         oauth_header = self.oauth.oauth_header(
             url, "POST", secret = self.oauth.asecret)
@@ -245,7 +245,7 @@ class api(object):
             return ret[1]
 
     def _urlreplace(self, a, b, replace = {}):
-        url = self.url[a][b]
+        url = self._url.url[a][b]
         
         # if user not in replace list, add auth user
         if "user" not in replace or not replace["user"]:

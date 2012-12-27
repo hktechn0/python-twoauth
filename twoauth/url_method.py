@@ -28,263 +28,271 @@
 # THE SOFTWARE.
 #
 
-protocol = "http"
-protocol_https = "https"
-twurl = protocol + "://api.twitter.com/1/"
-#twurl = protocol + "://twitter.com/"
-apiurl = protocol + "://api.twitter.com/1/"
-uploadurl = protocol_https + "://upload.twitter.com/1/"
-t = ".json"
+class TwitterURL(object):
+    protocol_http = "http"
+    protocol_https = "https"
 
-# Twitter REST API URLs
-url = {
-    "statuses" : {
-        "public_timeline" :
-            twurl + "statuses/public_timeline" + t,
-        "home_timeline" :
-            apiurl + "statuses/home_timeline" + t,
-        "friends_timeline" :
-            twurl + "statuses/friends_timeline" + t,
-        "user_timeline" :
-            twurl + "statuses/user_timeline" + t,
-        "mentions" :
-            twurl + "statuses/mentions" + t,
-        "retweeted_by_me" :
-            apiurl + "statuses/retweeted_by_me" + t,
-        "retweeted_to_me" :
-            apiurl + "statuses/retweeted_to_me" + t,
-        "retweets_of_me" :
-            apiurl + "statuses/retweets_of_me" + t,
-        "show" :
-            twurl + "statuses/show/${id}" + t,
-        "update" :
-            twurl + "statuses/update" + t,
-        "update_with_media":
-            uploadurl + "statuses/update_with_media" + t,
-        "destroy" :
-            twurl + "statuses/destroy/${id}" + t,
-        "retweet" :
-            apiurl + "statuses/retweet/${id}" + t,
-        "retweets" :
-            apiurl + "statuses/retweets/${id}" + t,
-        "retweeted_by" :
-            apiurl + "statuses/${id}/retweeted_by" + t,
-        "retweeted_by_ids" :
-            apiurl + "statuses/${id}/retweeted_by/ids" + t,
-        "friends" :
-            twurl + "statuses/friends" + t,
-        "followers" :
-            twurl + "statuses/followers" + t,
-        },
-    "users" : {
-        "show" :
-            twurl + "users/show" + t,
-        "lookup" :
-            twurl + "users/lookup" + t,
-        "search" :
-            apiurl + "users/search" + t,
-        "profile_image" :
-            apiurl + "users/profile_image/${user}" + t,
-        "suggestions" :
-            apiurl + "users/suggestions" + t,
-        "suggestions_cat" :
-            apiurl + "users/suggestions/${slug}" + t,
-        },
-    "account" : {
-        "verify_credentials" :
-            twurl + "account/verify_credentials" + t,
-        "rate_limit" :
-            twurl + "account/rate_limit_status" + t,
-        "end_session" :
-            twurl + "account/end_session" + t,
-        "delivery_device" :
-            twurl + "account/update_delivery_device" + t,
-        "profile_colors" :
-            twurl + "account/update_profile_colors" + t,
-        "profile_image" :
-            twurl + "account/update_profile_image" + t,
-        "profile_back" :
-            twurl + "account/update_profile_background_image" + t,
-        "update_profile" :
-            twurl + "account/update_profile" + t,
-        },
-    "lists" : {
-        "create" :
-            apiurl + "${user}/lists" + t,
-        "update" :
-            apiurl + "${user}/lists/${id}" + t,
-        "index" :
-            apiurl + "${user}/lists" + t,
-        "show" :
-            apiurl + "${user}/lists/${id}" + t,
-        "destroy" :
-            apiurl + "${user}/lists/${id}" + t,
-        "statuses" :
-            apiurl + "${user}/lists/${list_id}/statuses" + t,
-        "memberships" :
-            apiurl + "${user}/lists/memberships" + t,
-        "subscriptions" :
-            apiurl + "${user}/lists/subscriptions" + t,
-        "mlist" :
-            apiurl + "${user}/${list_id}/members" + t,
-        "madd" :
-            apiurl + "${user}/${list_id}/members" + t,
-        "mremove" :
-            apiurl + "${user}/${list_id}/members" + t,
-        "mshow" :
-            apiurl + "${user}/${list_id}/members/${id}" + t,
-        "slist" :
-            apiurl + "${user}/${list_id}/subscribers" + t,
-        "sadd" :
-            apiurl + "${user}/${list_id}/subscribers" + t,
-        "sremove" :
-            apiurl + "${user}/${list_id}/subscribers" + t,
-        "sshow" :
-            apiurl + "${user}/${list_id}/subscribers/${id}" + t,
-        },
-    "dm" : {
-        "list" :
-            twurl + "direct_messages" + t,
-        "sent" :
-            twurl + "direct_messages/sent" + t,
-        "new" :
-            twurl + "direct_messages/new" + t,
-        "destroy" :
-            twurl + "direct_messages/destroy/${id}" + t,
-        },
-    "friendship" : {
-        "create" :
-            twurl + "friendships/create/${user}" + t,
-        "destroy" :
-            twurl + "friendships/destroy/${user}" + t,
-        "exists" :
-            twurl + "friendships/exists" + t,
-        "show" :
-            twurl + "friendships/show" + t,
-        "friends" :
-            twurl + "friends/ids" + t,
-        "followers" :
-            twurl + "followers/ids" + t,
-        "incoming" :
-            apiurl + "friendships/incoming" + t,
-        "outgoing" :
-            apiurl + "friendships/outgoing" + t,
-        },
-    "favorite" : {
-        "list" :
-            twurl + "favorites/${user}" + t,
-        "create" :
-            twurl + "favorites/create/${id}" + t,
-        "destroy" :
-            twurl + "favorites/destroy/${id}" + t,
-        },
-    "block" : {
-        "create" :
-            twurl + "blocks/create" + t,
-        "destroy"  :
-            twurl + "blocks/destroy" + t,
-        "exists" :
-            twurl + "blocks/exists" + t,
-        "blocking" :
-            twurl + "blocks/blocking" + t,
-        "blockids" :
-            twurl + "blocks/blocking/ids" + t,
-        "report_spam" :
-            apiurl + "report_spam" + t,
-        },
-    "help" : {
-        "configuration" :
-            apiurl + "help/configuration" + t,
+    endpoint = "://api.twitter.com/1/"
+    endpoint_upload = "://upload.twitter.com/1/"
+    
+    # Twitter REST API Methods
+    method = {
+        "statuses" : {
+            "public_timeline"  : "GET",
+            "home_timeline"    : "GET",
+            "friends_timeline" : "GET",
+            "user_timeline"    : "GET",
+            "mentions"         : "GET",
+            "retweeted_by_me"  : "GET",
+            "retweeted_to_me"  : "GET",
+            "retweets_of_me"   : "GET",
+            "show"             : "GET",
+            "update"           : "POST",
+            "update_with_media": "POST",
+            "destroy"          : "POST",
+            "retweet"          : "POST",
+            "retweets"         : "GET",
+            "retweeted_by"     : "GET",
+            "retweeted_by_ids" : "GET",
+            "friends"          : "GET",
+            "followers"        : "GET"
+            },
+        "users" : {
+            "show"   : "GET",
+            "search" : "GET",
+            "lookup" : "GET",
+            "suggestions"     : "GET",
+            "suggestions_cat" : "GET",
+            },
+        "account" : {
+            "verify_credentials" : "GET",
+            "rate_limit"         : "GET",
+            "end_session"        : "POST",
+            "delivery_device"    : "POST",
+            "profile_colors"     : "POST",
+            "profile_image"      : "POST",
+            "profile_back"       : "POST",
+            "update_profile"     : "POST",
+            },
+        "lists" : {
+            "create"        : "POST",
+            "update"        : "POST",
+            "index"         : "GET",
+            "show"          : "GET",
+            "destroy"       : "DELETE",
+            "statuses"      : "GET",
+            "memberships"   : "GET",
+            "subscriptions" : "GET",
+            "mlist"         : "GET",
+            "madd"          : "POST",
+            "mremove"       : "DELETE",
+            "mshow"         : "GET",
+            "slist"         : "GET",
+            "sadd"          : "POST",
+            "sremove"       : "DELETE",
+            "sshow"         : "GET",
+            },
+        "dm" : {
+            "list"    : "GET",
+            "sent"    : "GET",
+            "new"     : "POST",
+            "destroy" : "POST"
+            },
+        "friendship" : {
+            "create"  : "POST",
+            "destroy" : "POST",
+            "exists"  : "GET",
+            "show"    : "GET",
+            "friends"   : "GET",
+            "followers" : "GET",
+            "incoming" : "GET",
+            "outgoing" : "GET",
+            },
+        "favorite" : {
+            "list"    : "GET",
+            "create"  : "POST",
+            "destroy" : "POST",
+            },
+        "block" : {
+            "create"   : "POST",
+            "destroy"  : "POST",
+            "exists"   : "GET",
+            "blocking" : "GET",
+            "blockids" : "GET",
+            "report_spam" : "POST",
+            },
+        "help" : {
+            "configuration" : "GET",
+            }
         }
-    }
-
-# Twitter REST API Methods
-method = {
-    "statuses" : {
-        "public_timeline"  : "GET",
-        "home_timeline"    : "GET",
-        "friends_timeline" : "GET",
-        "user_timeline"    : "GET",
-        "mentions"         : "GET",
-        "retweeted_by_me"  : "GET",
-        "retweeted_to_me"  : "GET",
-        "retweets_of_me"   : "GET",
-        "show"             : "GET",
-        "update"           : "POST",
-        "update_with_media": "POST",
-        "destroy"          : "POST",
-        "retweet"          : "POST",
-        "retweets"         : "GET",
-        "retweeted_by"     : "GET",
-        "retweeted_by_ids" : "GET",
-        "friends"          : "GET",
-        "followers"        : "GET"
-        },
-    "users" : {
-        "show"   : "GET",
-        "search" : "GET",
-        "lookup" : "GET",
-        "suggestions"     : "GET",
-        "suggestions_cat" : "GET",
-        },
-    "account" : {
-        "verify_credentials" : "GET",
-        "rate_limit"         : "GET",
-        "end_session"        : "POST",
-        "delivery_device"    : "POST",
-        "profile_colors"     : "POST",
-        "profile_image"      : "POST",
-        "profile_back"       : "POST",
-        "update_profile"     : "POST",
-        },
-    "lists" : {
-        "create"        : "POST",
-        "update"        : "POST",
-        "index"         : "GET",
-        "show"          : "GET",
-        "destroy"       : "DELETE",
-        "statuses"      : "GET",
-        "memberships"   : "GET",
-        "subscriptions" : "GET",
-        "mlist"         : "GET",
-        "madd"          : "POST",
-        "mremove"       : "DELETE",
-        "mshow"         : "GET",
-        "slist"         : "GET",
-        "sadd"          : "POST",
-        "sremove"       : "DELETE",
-        "sshow"         : "GET",
-        },
-    "dm" : {
-        "list"    : "GET",
-        "sent"    : "GET",
-        "new"     : "POST",
-        "destroy" : "POST"
-        },
-    "friendship" : {
-        "create"  : "POST",
-        "destroy" : "POST",
-        "exists"  : "GET",
-        "show"    : "GET",
-        "friends"   : "GET",
-        "followers" : "GET",
-        "incoming" : "GET",
-        "outgoing" : "GET",
-        },
-    "favorite" : {
-        "list"    : "GET",
-        "create"  : "POST",
-        "destroy" : "POST",
-        },
-    "block" : {
-        "create"   : "POST",
-        "destroy"  : "POST",
-        "exists"   : "GET",
-        "blocking" : "GET",
-        "blockids" : "GET",
-        "report_spam" : "POST",
-        },
-    "help" : {
-        "configuration" : "GET",
-        }
-    }
+    
+    def __init__(self, is_ssl = True, response_type = "json"):
+        if is_ssl:
+            api = TwitterURL.protocol_https + TwitterURL.endpoint
+        else:
+            api = TwitterURL.protocol_http + TwitterURL.endpoint
+        
+        upload = TwitterURL.protocol_https + TwitterURL.endpoint_upload
+        t = "." + response_type
+        
+        # Twitter REST API URLs
+        self.url = {
+            "statuses" : {
+                "public_timeline" :
+                    api + "statuses/public_timeline" + t,
+                "home_timeline" :
+                    api + "statuses/home_timeline" + t,
+                "friends_timeline" :
+                    api + "statuses/friends_timeline" + t,
+                "user_timeline" :
+                    api + "statuses/user_timeline" + t,
+                "mentions" :
+                    api + "statuses/mentions" + t,
+                "retweeted_by_me" :
+                    api + "statuses/retweeted_by_me" + t,
+                "retweeted_to_me" :
+                    api + "statuses/retweeted_to_me" + t,
+                "retweets_of_me" :
+                    api + "statuses/retweets_of_me" + t,
+                "show" :
+                    api + "statuses/show/${id}" + t,
+                "update" :
+                    api + "statuses/update" + t,
+                "update_with_media":
+                    upload + "statuses/update_with_media" + t,
+                "destroy" :
+                    api + "statuses/destroy/${id}" + t,
+                "retweet" :
+                    api + "statuses/retweet/${id}" + t,
+                "retweets" :
+                    api + "statuses/retweets/${id}" + t,
+                "retweeted_by" :
+                    api + "statuses/${id}/retweeted_by" + t,
+                "retweeted_by_ids" :
+                    api + "statuses/${id}/retweeted_by/ids" + t,
+                "friends" :
+                    api + "statuses/friends" + t,
+                "followers" :
+                    api + "statuses/followers" + t,
+                },
+            "users" : {
+                "show" :
+                    api + "users/show" + t,
+                "lookup" :
+                    api + "users/lookup" + t,
+                "search" :
+                    api + "users/search" + t,
+                "profile_image" :
+                    api + "users/profile_image/${user}" + t,
+                "suggestions" :
+                    api + "users/suggestions" + t,
+                "suggestions_cat" :
+                    api + "users/suggestions/${slug}" + t,
+                },
+            "account" : {
+                "verify_credentials" :
+                    api + "account/verify_credentials" + t,
+                "rate_limit" :
+                    api + "account/rate_limit_status" + t,
+                "end_session" :
+                    api + "account/end_session" + t,
+                "delivery_device" :
+                    api + "account/update_delivery_device" + t,
+                "profile_colors" :
+                    api + "account/update_profile_colors" + t,
+                "profile_image" :
+                    api + "account/update_profile_image" + t,
+                "profile_back" :
+                    api + "account/update_profile_background_image" + t,
+                "update_profile" :
+                    api + "account/update_profile" + t,
+                },
+            "lists" : {
+                "create" :
+                    api + "${user}/lists" + t,
+                "update" :
+                    api + "${user}/lists/${id}" + t,
+                "index" :
+                    api + "${user}/lists" + t,
+                "show" :
+                    api + "${user}/lists/${id}" + t,
+                "destroy" :
+                    api + "${user}/lists/${id}" + t,
+                "statuses" :
+                    api + "${user}/lists/${list_id}/statuses" + t,
+                "memberships" :
+                    api + "${user}/lists/memberships" + t,
+                "subscriptions" :
+                    api + "${user}/lists/subscriptions" + t,
+                "mlist" :
+                    api + "${user}/${list_id}/members" + t,
+                "madd" :
+                    api + "${user}/${list_id}/members" + t,
+                "mremove" :
+                    api + "${user}/${list_id}/members" + t,
+                "mshow" :
+                    api + "${user}/${list_id}/members/${id}" + t,
+                "slist" :
+                    api + "${user}/${list_id}/subscribers" + t,
+                "sadd" :
+                    api + "${user}/${list_id}/subscribers" + t,
+                "sremove" :
+                    api + "${user}/${list_id}/subscribers" + t,
+                "sshow" :
+                    api + "${user}/${list_id}/subscribers/${id}" + t,
+                },
+            "dm" : {
+                "list" :
+                    api + "direct_messages" + t,
+                "sent" :
+                    api + "direct_messages/sent" + t,
+                "new" :
+                    api + "direct_messages/new" + t,
+                "destroy" :
+                    api + "direct_messages/destroy/${id}" + t,
+                },
+            "friendship" : {
+                "create" :
+                    api + "friendships/create/${user}" + t,
+                "destroy" :
+                    api + "friendships/destroy/${user}" + t,
+                "exists" :
+                    api + "friendships/exists" + t,
+                "show" :
+                    api + "friendships/show" + t,
+                "friends" :
+                    api + "friends/ids" + t,
+                "followers" :
+                    api + "followers/ids" + t,
+                "incoming" :
+                    api + "friendships/incoming" + t,
+                "outgoing" :
+                    api + "friendships/outgoing" + t,
+                },
+            "favorite" : {
+                "list" :
+                    api + "favorites/${user}" + t,
+                "create" :
+                    api + "favorites/create/${id}" + t,
+                "destroy" :
+                    api + "favorites/destroy/${id}" + t,
+                },
+            "block" : {
+                "create" :
+                    api + "blocks/create" + t,
+                "destroy"  :
+                    api + "blocks/destroy" + t,
+                "exists" :
+                    api + "blocks/exists" + t,
+                "blocking" :
+                    api + "blocks/blocking" + t,
+                "blockids" :
+                    api + "blocks/blocking/ids" + t,
+                "report_spam" :
+                    api + "report_spam" + t,
+                },
+            "help" : {
+                "configuration" :
+                    api + "help/configuration" + t,
+                }
+            }

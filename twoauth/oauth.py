@@ -44,15 +44,15 @@ class oauth(object):
     _randchars = string.ascii_letters + string.digits
     
     def __init__(self, ckey, csecret, atoken = "", asecret = "",
-                 site = "http://twitter.com/"):
+                 site = "https://twitter.com/"):
         # Request Token URL
-        self.reqt_url = site + 'oauth/request_token'
+        self._reqt_url = site + 'oauth/request_token'
         # Authorize URL
-        self.authorize_url = site + 'oauth/authorize'
+        self._authorize_url = site + 'oauth/authorize'
         # Authenticate URL
-        self.authenticate_url = site + 'oauth/authenticate'
+        self._authenticate_url = site + 'oauth/authenticate'
         # Access Token URL
-        self.acct_url = site + 'oauth/access_token'
+        self._acct_url = site + 'oauth/access_token'
 
         # Consumer Key, Secret
         self.ckey = ckey
@@ -71,17 +71,17 @@ class oauth(object):
         del oauth_params["oauth_token"]
 
         if callback_url != "":
-            params = {"oauth_callback": urllib.quote_plus(oauth_callback)}
+            params = {"oauth_callback": urllib.quote_plus(callback_url)}
             params = urllib.urlencode(params)
         else:
             params = None
         
         # get OAuth header
-        auth_header = self.oauth_header(self.reqt_url,
+        auth_header = self.oauth_header(self._reqt_url,
                                         oauth_params = oauth_params)
         
         # send request
-        req = urllib2.Request(self.reqt_url, params)
+        req = urllib2.Request(self._reqt_url)
         req.add_header("Authorization", auth_header)
         resp = urllib2.urlopen(req)
         
@@ -95,12 +95,12 @@ class oauth(object):
     # Get Authorize URL
     def authorize_url(self, token_info):
         return "%s?%s=%s" % (
-            self.authorize_url, "oauth_token", token_info["oauth_token"])
+            self._authorize_url, "oauth_token", token_info["oauth_token"])
 
     # Get Authenticate URL
     def authenticate_url(self, token_info):
         return "%s?%s=%s" % (
-            self.authenticate_url, "oauth_token", token_info["oauth_token"])
+            self._authenticate_url, "oauth_token", token_info["oauth_token"])
     
     # Get Access Token
     def access_token(self, token_info, pin):
@@ -113,11 +113,11 @@ class oauth(object):
         oauth_params["oauth_verifier"] = pin
         
         # get OAuth header
-        auth_header = self.oauth_header(self.acct_url, secret = secret,
+        auth_header = self.oauth_header(self._acct_url, secret = secret,
                                         oauth_params = oauth_params)
         
         # send request
-        req = urllib2.Request(self.acct_url)
+        req = urllib2.Request(self._acct_url)
         req.add_header("Authorization", auth_header)
         resp = urllib2.urlopen(req)
         
@@ -195,9 +195,12 @@ class oauth(object):
         return req
     
     # Return httplib.HTTPResponse (for DELETE Method
-    def oauth_http_request(self, url, method = "GET", params = {}, header = {}):        
+    def oauth_http_request(self, url, method = "GET", params = {}, header = {}):
         urlp = urlparse.urlparse(url)
-        conn = httplib.HTTPConnection(urlp.netloc)
+        if urlp.scheme == "https":
+            conn = httplib.HTTPSConnection(urlp.netloc)
+        else:
+            conn = httplib.HTTPConnection(urlp.netloc)
         
         header["Authorization"] = self.oauth_header(url, method, params, self.asecret)
         
