@@ -32,8 +32,8 @@ class TwitterURL(object):
     protocol_http = "http"
     protocol_https = "https"
 
-    endpoint = "://api.twitter.com/1/"
-    endpoint_upload = "://upload.twitter.com/1/"
+    endpoint = "://api.twitter.com/1.1/"
+    endpoint_upload = "://upload.twitter.com/1.1/"
     
     # Twitter REST API Methods
     method = {
