@@ -151,11 +151,11 @@ class StreamingAPI(object):
         return params
     
     def sample(self):
-        path = "https://stream.twitter.com/1/statuses/sample.json"
+        path = "https://stream.twitter.com/1.1/statuses/sample.json"
         return Stream(self._request(path))
     
     def filter(self, follow = [], locations = [], track = [], **params):
-        path = "https://stream.twitter.com/1/statuses/filter.json"
+        path = "https://stream.twitter.com/1.1/statuses/filter.json"
         p = self._params(follow, locations, track)
         p.update(params)
         

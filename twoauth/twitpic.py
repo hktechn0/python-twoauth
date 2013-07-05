@@ -45,7 +45,7 @@ import oauth
 class Twitpic(object):
     host = "api.twitpic.com"
     url = "/2/upload.json"
-    verify_credentials_url = "https://api.twitter.com/1/account/verify_credentials.json"
+    verify_credentials_url = "https://api.twitter.com/1.1/account/verify_credentials.json"
     
     def __init__(self, oauth, apikey):
         self.oauth = oauth
