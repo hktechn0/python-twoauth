@@ -33,7 +33,6 @@ class TwitterURL(object):
     protocol_https = "https"
 
     endpoint = "://api.twitter.com/1.1/"
-    endpoint_upload = "://upload.twitter.com/1.1/"
     
     # Twitter REST API Methods
     method = {
@@ -132,7 +131,6 @@ class TwitterURL(object):
         else:
             api = TwitterURL.protocol_http + TwitterURL.endpoint
         
-        upload = TwitterURL.protocol_https + TwitterURL.endpoint_upload
         t = "." + response_type
         
         # Twitter REST API URLs
@@ -159,7 +157,7 @@ class TwitterURL(object):
                 "update" :
                     api + "statuses/update" + t,
                 "update_with_media":
-                    upload + "statuses/update_with_media" + t,
+                    api + "statuses/update_with_media" + t,
                 "destroy" :
                     api + "statuses/destroy/${id}" + t,
                 "retweet" :
